@@ -36,11 +36,10 @@ class WirelessConnectionManager
 		void signalAsyncReady();
 		void initWifiDevice();
 		bool hasInternetAccess();
-		bool tryFindConnectionFromSSID();
+		NMConnection* tryFindConnectionFromSSID();
 		void initConnection();
 		const gchar* getConnectionPassword(NMRemoteConnection* connection);
 		NMAccessPoint* findAccessPoint();
-		NMConnection* findOrMakeNewConnection();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);
 		

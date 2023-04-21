@@ -62,7 +62,11 @@ void WirelessConnectionManager::initConnection()
 	//if (hasInternetAccess())
 		//return;
 
-	tryFindConnectionFromSSID();
+	NMConnection* connection = tryFindConnectionFromSSID();
+	if (connection != NULL)
+	{
+		std::cout << "Found Connection for the WiFi!!" << std::endl;
+	}
 
 }
 
@@ -90,7 +94,6 @@ const gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection
 	}
 
 	const gchar* passwordStr = g_variant_dup_string(passwordGVariant, NULL);
-	std::cout << "getting psk from function " << passwordStr << std::endl;
 	
 	if (!g_strcmp0(passwordStr, ""))
 	{
@@ -106,7 +109,7 @@ const gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection
 	return passwordStr;
 }
 
-bool WirelessConnectionManager::tryFindConnectionFromSSID()
+NMConnection* WirelessConnectionManager::tryFindConnectionFromSSID()
 {
 	const GPtrArray* connections = nm_client_get_connections(client);
 
@@ -124,38 +127,23 @@ bool WirelessConnectionManager::tryFindConnectionFromSSID()
 			continue;
 
 		const char* keyMgmt = nm_setting_wireless_security_get_key_mgmt(settingWirelessSecurity);
-		std::cout << "keyMgmt is " << keyMgmt << std::endl;
 
 		if (g_strcmp0(keyMgmt, KEY_MGMT_WPA_PSK))
 			continue;
 
-		std::cout << "keyMgmt check passed" << std::endl;
 		GBytes* ssidGBytesCandidate = nm_setting_wireless_get_ssid(settingWireless);
 
 		const gchar* passwordCandidate = getConnectionPassword(NM_REMOTE_CONNECTION(currentConnection));
 
 		if (passwordCandidate == NULL)
-		{
-			std::cout << "passwordCandidate is NULL" << std::endl;
 			continue;
-		}
-
-		std::cout << "passwordCandidate: " << passwordCandidate << std::endl;
-		std::cout << "password: " << password << std::endl;
 
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate) && !g_strcmp0(password.c_str(), passwordCandidate))
-		{
-			std::cout << "Found connection match" << std::endl;
-			return true;
-		}
-		else
-		{
-			std::cout << "Inequality" << std::endl;
-		}
+			return currentConnection;
 
 	}
 
-	return false;
+	return NULL;
 }
 
 WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, const std::string& password)
