@@ -145,7 +145,7 @@ bool WirelessConnectionManager::tryFindConnectionFromSSID()
 
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate) && !g_strcmp0(password.c_str(), passwordCandidate))
 		{
-			std::cout << "Found already existing connection, using it" << std::endl;
+			std::cout << "Found connection match" << std::endl;
 			return true;
 		}
 		else
