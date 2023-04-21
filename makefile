@@ -1,6 +1,10 @@
-all: wifilib
+all: remote
 
-wifilib: WirelessConnectionManager.cpp wifiobj.cpp
+local: WirelessConnectionManager.cpp wifiobj.cpp
+	g++ $^ `pkg-config --cflags --libs glib-2.0 libnm` -o $@
+	
+remote: WirelessConnectionManager.cpp wifiobj.cpp
+	clean
 	git pull
 	g++ $^ `pkg-config --cflags --libs glib-2.0 libnm` -o $@
 
