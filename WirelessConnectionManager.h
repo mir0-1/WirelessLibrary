@@ -3,6 +3,8 @@
 #include <NetworkManager.h>
 #include <string>
 
+#define CALLBACK_PARAMS_TEMPLATE GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr
+
 class WirelessConnectionManager;
 
 typedef struct
@@ -28,13 +30,14 @@ class WirelessConnectionManager
 		bool lastAsyncState;
 		
 		static gpointer gLoopThreadFunc(gpointer thisObjData);
-		static void readyInitClientCallback(GObject* srcObject, GAsyncResult* result, gpointer thisObjData);
-		static void connectivityCheckReadyCallback(GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr);
-		static void remoteConnectionSecretsReadyCallback(GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr);
+		static void clientReadyCallback(CALLBACK_PARAMS_TEMPLATE);
+		static void connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE);
+		static void remoteConnectionSecretsReadyCallback(CALLBACK_PARAMS_TEMPLATE);
+		static void scanReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		
 		void waitForAsync();
 		void signalAsyncReady();
-		NMDevice* initWifiDevice();
+		NMWifiDevice* initWifiDevice();
 		bool hasInternetAccess();
 		NMConnection* tryFindConnectionFromSSID();
 		NMConnection* makeConnectionFromAP();

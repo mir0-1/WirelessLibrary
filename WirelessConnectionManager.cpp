@@ -16,14 +16,14 @@ gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 	return NULL;
 }
 
-NMDevice* WirelessConnectionManager::initWifiDevice()
+NMWifiDevice* WirelessConnectionManager::initWifiDevice()
 {
 	const GPtrArray* devices = nm_client_get_devices(client);
 	
 	for (int i = 0; i < devices->len; i++)
 	{
 		if (NM_IS_DEVICE_WIFI(devices->pdata[i]))
-			return NM_DEVICE(devices->pdata[i]);
+			return NM_WIFI_DEVICE(devices->pdata[i]);
 	}
 	
 	return NULL;
@@ -38,7 +38,7 @@ bool WirelessConnectionManager::hasInternetAccess()
 	return connected;
 }
 
-void WirelessConnectionManager::connectivityCheckReadyCallback(GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr)
+void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMConnectivityState connectivityState = nm_client_check_connectivity_finish(NM_CLIENT(srcObject), result, NULL);
@@ -46,7 +46,7 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(GObject* srcObjec
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
-void WirelessConnectionManager::remoteConnectionSecretsReadyCallback(GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr)
+void WirelessConnectionManager::remoteConnectionSecretsReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	*((GVariant**)asyncTransferUnit->extraData) = nm_remote_connection_get_secrets_finish(NM_REMOTE_CONNECTION(srcObject), result, NULL);
@@ -61,17 +61,18 @@ void WirelessConnectionManager::initConnection()
 	NMConnection* connection = tryFindConnectionFromSSID();
 	if (connection != NULL)
 	{
-		std::cout << "Init connection successfully" << std::endl;
+		std::cout << "Successfully init connection" << std::endl;
 		return;
 	}
 	
-	NMDevice* device = initWifiDevice();
+	connection = makeConnectionFromAP();
 	
 
 }
 
 NMConnection* WirelessConnectionManager::makeConnectionFromAP()
 {
+	return NULL;
 	
 }
 
@@ -168,7 +169,7 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	g_cond_init(&gCond);
 	gMainContext = g_main_context_get_thread_default();
 	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
-	nm_client_new_async(NULL, readyInitClientCallback, (gpointer)this);
+	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
 	initConnection();
 }
@@ -184,9 +185,9 @@ void WirelessConnectionManager::setPassword(const std::string& password)
 	this->password = password;
 }
 
-void WirelessConnectionManager::readyInitClientCallback(GObject* srcObject, GAsyncResult* result, gpointer thisObjData)
+void WirelessConnectionManager::clientReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	WirelessConnectionManager* thisObj = (WirelessConnectionManager*) thisObjData;
+	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	thisObj->client = nm_client_new_finish(result, NULL);
 	thisObj->signalAsyncReady();
 }
