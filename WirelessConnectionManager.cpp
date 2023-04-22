@@ -7,6 +7,8 @@
 #define KEY_MGMT_WPA_IEE8021X "ieee8021x"
 
 #define PROP_PSK "psk"
+#define CONTINUE_IF(cond) if (cond) continue
+#define RETURN_VOID_IF(cond) if (cond) return
 
 gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 {
@@ -60,10 +62,7 @@ void WirelessConnectionManager::initConnection()
 
 	NMConnection* connection = tryFindConnectionFromSSID();
 	if (connection != NULL)
-	{
-		std::cout << "Successfully init connection" << std::endl;
 		return;
-	}
 	
 	connection = makeConnectionFromAP();
 	
@@ -72,8 +71,7 @@ void WirelessConnectionManager::initConnection()
 
 NMConnection* WirelessConnectionManager::makeConnectionFromAP()
 {
-	return NULL;
-	
+	return NULL;	
 }
 
 gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* connection)
@@ -103,10 +101,7 @@ gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* conn
 	if (!g_strcmp0(passwordStr, ""))
 	{
 		g_free(passwordStr);
-		g_variant_unref(passwordGVariant);
-		g_variant_unref(wirelessSecurity);
-		g_variant_unref(root);
-		return NULL;
+		passwordStr = NULL;
 	}
 
 	g_variant_unref(passwordGVariant);
@@ -122,30 +117,20 @@ NMConnection* WirelessConnectionManager::tryFindConnectionFromSSID()
 	for (int i = 0; i < connections->len; i++)
 	{
 		NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
-
-		if (g_strcmp0(nm_connection_get_connection_type(currentConnection), NM_SETTING_WIRELESS_SETTING_NAME))
-			continue;
+		CONTINUE_IF(g_strcmp0(nm_connection_get_connection_type(currentConnection), NM_SETTING_WIRELESS_SETTING_NAME));
 
 		NMSettingWireless* settingWireless = nm_connection_get_setting_wireless(currentConnection);
 		NMSettingWirelessSecurity* settingWirelessSecurity = nm_connection_get_setting_wireless_security(currentConnection);
-
-		if (settingWireless == NULL || settingWirelessSecurity == NULL)
-			continue;
+		CONTINUE_IF(settingWireless == NULL || settingWirelessSecurity == NULL);
 
 		const char* keyMgmt = nm_setting_wireless_security_get_key_mgmt(settingWirelessSecurity);
-
-		if (g_strcmp0(keyMgmt, KEY_MGMT_WPA_PSK))
-			continue;
+		CONTINUE_IF(g_strcmp0(keyMgmt, KEY_MGMT_WPA_PSK));
 
 		GBytes* ssidGBytesCandidate = nm_setting_wireless_get_ssid(settingWireless);
-		
-		if (ssidGBytesCandidate == NULL)
-			continue;
+		CONTINUE_IF(ssidGBytesCandidate == NULL);
 		
 		gchar* passwordCandidate = getConnectionPassword(NM_REMOTE_CONNECTION(currentConnection));
-
-		if (passwordCandidate == NULL)
-			continue;
+		CONTINUE_IF(passwordCandidate == NULL);
 
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate) && !g_strcmp0(password.c_str(), passwordCandidate))
 		{
