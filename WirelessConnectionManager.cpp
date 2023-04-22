@@ -79,7 +79,7 @@ void WirelessConnectionManager::initConnection()
 
 }
 
-NMAccessPoint* findAccessPointBySSID()
+NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID()
 {
 	NMDeviceWifi* device = initWifiDevice();
 	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
