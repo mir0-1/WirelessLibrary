@@ -60,21 +60,44 @@ void WirelessConnectionManager::initConnection()
 	//if (hasInternetAccess())
 		//return;
 
-	NMConnection* connection = tryFindConnectionFromSSID();
-	if (connection != NULL)
+	//NMConnection* connection = tryFindConnectionFromSSID();
+	//if (connection != NULL)
+		//return;
+	
+	NMConnection* connection = makeConnectionFromAP();
+	if (connection == NULL)
+		std::cout << "connection null" << std::endl;
+	else
 	{
-		std::cout << "Debug connection is ready" << std::endl;
+		std::cout << nm_connection_get_uuid(connection) << std::endl;
 		return;
 	}
-	
-	connection = makeConnectionFromAP();
 	
 
 }
 
 NMConnection* WirelessConnectionManager::makeConnectionFromAP()
 {
-	return NULL;	
+	NMDeviceWifi* device = initWifiDevice();
+	const GPtrArray* accessPoints = nm_device_wifi_get_access_points();
+	const GPtrArray* connections = nm_client_get_connections();
+	
+	for (int i = 0; i < accessPoints->len; i++)
+	{
+		NMAccessPoint* currentAccessPoint = NM_ACCESS_POINT(accessPoints->pdata[i]);
+		GBytes* ssidGBytesCandidate = nm_access_point_get_ssid(currentAccessPoint);
+		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate))
+		{
+			for (int j = 0; j < connections->len; j++)
+			{
+				NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
+				if (nm_access_point_connection_valid(currentAccessPoint, currentConnection))
+					return currentConnection;
+			}
+		}
+	}
+	
+	return NULL;
 }
 
 gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* connection)
