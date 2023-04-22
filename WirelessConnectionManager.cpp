@@ -16,14 +16,14 @@ gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 	return NULL;
 }
 
-NMWifiDevice* WirelessConnectionManager::initWifiDevice()
+NMDeviceWifi* WirelessConnectionManager::initWifiDevice()
 {
 	const GPtrArray* devices = nm_client_get_devices(client);
 	
 	for (int i = 0; i < devices->len; i++)
 	{
 		if (NM_IS_DEVICE_WIFI(devices->pdata[i]))
-			return NM_WIFI_DEVICE(devices->pdata[i]);
+			return NM_DEVICE_WIFI(devices->pdata[i]);
 	}
 	
 	return NULL;
@@ -188,8 +188,8 @@ void WirelessConnectionManager::setPassword(const std::string& password)
 void WirelessConnectionManager::clientReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	thisObj->client = nm_client_new_finish(result, NULL);
-	thisObj->signalAsyncReady();
+	asyncTransferUnit->thisObj->client = nm_client_new_finish(result, NULL);
+	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
 void WirelessConnectionManager::waitForAsync()
