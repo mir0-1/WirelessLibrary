@@ -92,6 +92,8 @@ NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID()
 	{
 		NMAccessPoint* currentAccessPoint = NM_ACCESS_POINT(accessPoints->pdata[i]);
 		GBytes* ssidGBytesCandidate = nm_access_point_get_ssid(currentAccessPoint);
+		std::cout << "SSIDPTR: " << ssidGBytes << std::endl;
+		std::cout << "SSIDCANDIDATE: " << ssidGBytesCandidate << std::endl;
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate))
 			return currentAccessPoint;
 	}
