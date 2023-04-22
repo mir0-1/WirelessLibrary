@@ -79,8 +79,8 @@ void WirelessConnectionManager::initConnection()
 NMConnection* WirelessConnectionManager::makeConnectionFromAP()
 {
 	NMDeviceWifi* device = initWifiDevice();
-	const GPtrArray* accessPoints = nm_device_wifi_get_access_points();
-	const GPtrArray* connections = nm_client_get_connections();
+	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
+	const GPtrArray* connections = nm_client_get_connections(client);
 	
 	for (int i = 0; i < accessPoints->len; i++)
 	{
