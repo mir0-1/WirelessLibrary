@@ -80,7 +80,7 @@ void WirelessConnectionManager::initConnection()
 			std::cout << "activation ok, signaling not needed" << std::endl;
 			return;
 		}
-		NMActiveConnectionState connectionState = (*(NMActiveConnectionState)asyncTransferUnit.extraData);
+		NMActiveConnectionState connectionState = (*(NMActiveConnectionState*)asyncTransferUnit.extraData);
 		do
 		{
 			std::cout << "signal connect" << std::endl;
