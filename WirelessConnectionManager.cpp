@@ -59,12 +59,8 @@ void WirelessConnectionManager::initConnection()
 {
 	//if (hasInternetAccess())
 		//return;
-
-	//NMConnection* connection = tryFindConnectionFromSSID();
-	//if (connection != NULL)
-		//return;
 	
-	NMConnection* connection = makeConnectionFromAP();
+	NMConnection* connection = tryFindConnectionFromAP();
 	if (connection == NULL)
 		std::cout << "connection null" << std::endl;
 	else
@@ -76,7 +72,7 @@ void WirelessConnectionManager::initConnection()
 
 }
 
-NMConnection* WirelessConnectionManager::makeConnectionFromAP()
+NMConnection* WirelessConnectionManager::tryFindConnectionFromAP()
 {
 	NMDeviceWifi* device = initWifiDevice();
 	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
@@ -134,41 +130,6 @@ gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* conn
 	g_variant_unref(wirelessSecurity);
 	g_variant_unref(root);
 	return passwordStr;
-}
-
-NMConnection* WirelessConnectionManager::tryFindConnectionFromSSID()
-{
-	const GPtrArray* connections = nm_client_get_connections(client);
-
-	for (int i = 0; i < connections->len; i++)
-	{
-		NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
-		CONTINUE_IF(g_strcmp0(nm_connection_get_connection_type(currentConnection), NM_SETTING_WIRELESS_SETTING_NAME));
-
-		NMSettingWireless* settingWireless = nm_connection_get_setting_wireless(currentConnection);
-		NMSettingWirelessSecurity* settingWirelessSecurity = nm_connection_get_setting_wireless_security(currentConnection);
-		CONTINUE_IF(settingWireless == NULL || settingWirelessSecurity == NULL);
-
-		const char* keyMgmt = nm_setting_wireless_security_get_key_mgmt(settingWirelessSecurity);
-		CONTINUE_IF(g_strcmp0(keyMgmt, KEY_MGMT_WPA_PSK));
-
-		GBytes* ssidGBytesCandidate = nm_setting_wireless_get_ssid(settingWireless);
-		CONTINUE_IF(ssidGBytesCandidate == NULL);
-		
-		gchar* passwordCandidate = getConnectionPassword(NM_REMOTE_CONNECTION(currentConnection));
-		CONTINUE_IF(passwordCandidate == NULL);
-
-		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate) && !g_strcmp0(password.c_str(), passwordCandidate))
-		{
-			g_free(passwordCandidate);
-			return currentConnection;
-		}
-		
-		g_free(passwordCandidate);
-
-	}
-
-	return NULL;
 }
 
 WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, const std::string& password)
