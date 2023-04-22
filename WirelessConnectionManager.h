@@ -34,9 +34,10 @@ class WirelessConnectionManager
 		
 		void waitForAsync();
 		void signalAsyncReady();
-		void initWifiDevice();
+		NMDevice* initWifiDevice();
 		bool hasInternetAccess();
 		NMConnection* tryFindConnectionFromSSID();
+		NMConnection* makeConnectionFromAP();
 		void initConnection();
 		const gchar* getConnectionPassword(NMRemoteConnection* connection);
 		NMAccessPoint* findAccessPoint();

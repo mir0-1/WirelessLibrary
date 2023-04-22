@@ -16,26 +16,22 @@ gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 	return NULL;
 }
 
-void WirelessConnectionManager::initWifiDevice()
+NMDevice* WirelessConnectionManager::initWifiDevice()
 {
 	const GPtrArray* devices = nm_client_get_devices(client);
 	
 	for (int i = 0; i < devices->len; i++)
 	{
 		if (NM_IS_DEVICE_WIFI(devices->pdata[i]))
-		{
-			device = NM_DEVICE(devices->pdata[i]);
-			return;
-		}
+			return NM_DEVICE(devices->pdata[i]);
 	}
 	
-	device = NULL;
+	return NULL;
 }
 
 bool WirelessConnectionManager::hasInternetAccess()
 {
 	bool connected = false;
-
 	asyncTransferUnit.extraData = (void*)&connected;
 	nm_client_check_connectivity_async(client, NULL, connectivityCheckReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
@@ -45,7 +41,7 @@ bool WirelessConnectionManager::hasInternetAccess()
 void WirelessConnectionManager::connectivityCheckReadyCallback(GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	NMConnectivityState connectivityState = nm_client_check_connectivity_finish(asyncTransferUnit->thisObj->client, result, NULL);
+	NMConnectivityState connectivityState = nm_client_check_connectivity_finish(NM_CLIENT(srcObject), result, NULL);
 	*((bool*)asyncTransferUnit->extraData) = (connectivityState == NM_CONNECTIVITY_FULL);
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
@@ -65,11 +61,19 @@ void WirelessConnectionManager::initConnection()
 	NMConnection* connection = tryFindConnectionFromSSID();
 	if (connection != NULL)
 	{
-		std::cout << "Found Connection for the WiFi!!" << std::endl;
+		std::cout << "Init connection successfully" << std::endl;
+		return;
 	}
+	
+	NMDevice* device = initWifiDevice();
+	
 
 }
 
+NMConnection* WirelessConnectionManager::makeConnectionFromAP()
+{
+	
+}
 
 const gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* connection)
 {
@@ -97,6 +101,7 @@ const gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection
 	
 	if (!g_strcmp0(passwordStr, ""))
 	{
+		g_free(passwordStr);
 		g_variant_unref(passwordGVariant);
 		g_variant_unref(wirelessSecurity);
 		g_variant_unref(root);
@@ -132,14 +137,22 @@ NMConnection* WirelessConnectionManager::tryFindConnectionFromSSID()
 			continue;
 
 		GBytes* ssidGBytesCandidate = nm_setting_wireless_get_ssid(settingWireless);
-
+		
+		if (ssidGBytesCandidate == NULL)
+			continue;
+		
 		const gchar* passwordCandidate = getConnectionPassword(NM_REMOTE_CONNECTION(currentConnection));
 
 		if (passwordCandidate == NULL)
 			continue;
 
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate) && !g_strcmp0(password.c_str(), passwordCandidate))
+		{
+			g_free(passwordCandidate);
 			return currentConnection;
+		}
+		
+		g_free(passwordCandidate);
 
 	}
 
@@ -157,7 +170,6 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
 	nm_client_new_async(NULL, readyInitClientCallback, (gpointer)this);
 	waitForAsync();
-	initWifiDevice();
 	initConnection();
 }
 
