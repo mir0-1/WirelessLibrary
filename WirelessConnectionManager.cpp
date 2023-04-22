@@ -33,18 +33,16 @@ NMDeviceWifi* WirelessConnectionManager::initWifiDevice()
 
 bool WirelessConnectionManager::hasInternetAccess()
 {
-	bool connected = false;
-	asyncTransferUnit.extraData = (void*)&connected;
 	nm_client_check_connectivity_async(client, NULL, connectivityCheckReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
-	return connected;
+	return asyncTransferUnit.extraData;
 }
 
 void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMConnectivityState connectivityState = nm_client_check_connectivity_finish(NM_CLIENT(srcObject), result, NULL);
-	*((bool*)asyncTransferUnit->extraData) = (connectivityState == NM_CONNECTIVITY_FULL);
+	asyncTransferUnit->extraData = (void*)(connectivityState == NM_CONNECTIVITY_FULL);
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
@@ -61,7 +59,8 @@ void WirelessConnectionManager::initConnection()
 		//return;
 	
 	std::cout << "random debug message" << std::endl;
-	NMAccessPoint* accessPoint = findAccessPointBySSID();
+	NMDeviceWifi* device = initWifiDevice();
+	NMAccessPoint* accessPoint = findAccessPointBySSID(device);
 	if (accessPoint == NULL)
 	{
 		std::cout << "AP not present" << std::endl;
@@ -72,11 +71,18 @@ void WirelessConnectionManager::initConnection()
 	if (connection != NULL)
 	{
 		std::cout << "connection match" << std::endl;
+		return;
 	}
 	
-	if (isAccessPointWPA(accessPoint))
+	if (!isAccessPointWPA(accessPoint))
 	{
-		std::cout << "Found WPA access point" << std::endl;
+		std::cout << "AP not WPA" << std::endl;
+		return;
+	}
+	connection = newConnectionFromAP(accessPoint);
+	if (connection != NULL)
+	{
+		std::cout << "new conn from AP!!" << std::endl;
 	}
 }
 
@@ -104,11 +110,27 @@ NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* acce
 	
 	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
 	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
+	
+	nm_client_add_and_activate_connection_async(client, connection, device, (const char*)accessPoint, NULL, connectionAddAndActivateReadyCallback, (gpointer)&asyncTransferUnit);
+	waitForAsync();
+	bool successful = (bool)asyncTransferUnit.extraData;
+	
+	if (successful)
+	{
+		std::cout << "add and activate new connection" << std::endl;
+	}
 }
 
-NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID()
+void WirelessConnectionManager::connectionAddAndActivateReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	NMDeviceWifi* device = initWifiDevice();
+	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
+	NMActiveConnection* connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
+	asyncTransferUnit->extraData = (void*)(connResult != NULL);
+	asyncTransferUnit->thisObj->signalAsyncReady();
+}
+
+NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID(NMDeviceWifi* device)
+{
 	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
 	
 	for (int i = 0; i < accessPoints->len; i++)
