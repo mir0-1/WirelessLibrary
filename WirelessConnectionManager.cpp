@@ -81,12 +81,9 @@ void WirelessConnectionManager::initConnection()
 			return;
 		}
 		NMActiveConnectionState connectionState = (*(NMActiveConnectionState*)asyncTransferUnit.extraData);
-		do
-		{
-			std::cout << "signal connect" << std::endl;
-			g_signal_connect(activatingConnection, "notify::state", G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
-			//waitForAsync();
-		} while (connectionState != NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
+		std::cout << "signal connect attempt" << std::endl;
+		g_signal_connect(activatingConnection, "notify::state", G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
+		waitForAsync();
 		std::cout << "done, activated" << std::endl;
 		return;
 	}
@@ -104,7 +101,7 @@ void WirelessConnectionManager::initConnection()
 	}
 }
 
-bool activateAndOrAddConnection(NMConnection* connection, NMAccessPoint* accessPoint, bool add)
+bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMAccessPoint* accessPoint, bool add)
 {
 	return false;
 }
@@ -121,8 +118,8 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
-	asyncTransferUnit->extraData = (void*)state;
-	//asyncTransferUnit->thisObj->signalAsyncReady();
+	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+		asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
 bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
