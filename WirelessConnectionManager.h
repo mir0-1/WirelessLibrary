@@ -20,7 +20,6 @@ class WirelessConnectionManager
 		std::string password;
 		GBytes* ssidGBytes;
 		NMClient* client;
-		NMDevice* device;
 		GMainContext* gMainContext;
 		GMainLoop* gMainLoop;
 		GThread* gLoopThread;
@@ -42,7 +41,7 @@ class WirelessConnectionManager
 		NMAccessPoint* findAccessPointBySSID(NMDeviceWifi* device);
 		bool isAccessPointWPA(NMAccessPoint* accessPoint);
 		NMConnection* tryFindConnectionFromAP(NMAccessPoint* accessPoint);
-		NMConnection* newConnectionFromAP(NMAccessPoint* accessPoint);
+		NMConnection* newConnectionFromAP(NMAccessPoint* accessPoint, NMDeviceWifi* device);
 		void initConnection();
 		gchar* getConnectionPassword(NMRemoteConnection* connection);
 		NMAccessPoint* findAccessPoint();
