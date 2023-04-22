@@ -33,15 +33,15 @@ class WirelessConnectionManager
 		static void clientReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void remoteConnectionSecretsReadyCallback(CALLBACK_PARAMS_TEMPLATE);
-		static void scanReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		
 		void waitForAsync();
 		void signalAsyncReady();
 		NMDeviceWifi* initWifiDevice();
 		bool hasInternetAccess();
 		NMAccessPoint* findAccessPointBySSID();
+		bool isAccessPointWPA(NMAccessPoint* accessPoint);
 		NMConnection* tryFindConnectionFromAP(NMAccessPoint* accessPoint);
-		NMConnection* newConnectionFromAP();
+		NMConnection* newConnectionFromAP(NMAccessPoint* accessPoint);
 		void initConnection();
 		gchar* getConnectionPassword(NMRemoteConnection* connection);
 		NMAccessPoint* findAccessPoint();

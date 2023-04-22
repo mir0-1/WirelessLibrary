@@ -69,18 +69,41 @@ void WirelessConnectionManager::initConnection()
 	}
 	
 	NMConnection* connection = tryFindConnectionFromAP(accessPoint);
-	if (connection == NULL)
+	if (connection != NULL)
 	{
-		std::cout << "connection null" << std::endl;
-		
-	}
-	else
-	{
-		std::cout << nm_connection_get_uuid(connection) << std::endl;
-		return;
+		std::cout << "connection match" << std::endl;
 	}
 	
+	if (isAccessPointWPA(accessPoint))
+	{
+		std::cout << "Found WPA access point" << std::endl;
+	}
+}
 
+bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
+{
+	NM80211ApSecurityFlags flags = nm_access_point_get_wpa_flags(accessPoint);
+	if (flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
+		return true;
+	
+	flags = nm_access_point_get_rsn_flags(accessPoint);
+	if (flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
+		return true;
+	
+	return false;
+}
+
+NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* accessPoint)
+{	
+	NMConnection* connection = NM_CONNECTION(nm_simple_connection_new());
+	NMSettingWireless* settingWireless = nm_setting_wireless_new();
+	NMSettingWirelessSecurity* settingWirelessSecurity = nm_setting_wireless_security_new();
+	
+	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
+	g_object_set(G_OBJECT(settingWirelessSecurity), NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PROP_PSK, NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), NULL);
+	
+	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
+	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
 }
 
 NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID()
