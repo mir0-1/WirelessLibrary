@@ -88,6 +88,7 @@ void WirelessConnectionManager::initConnection()
 			//waitForAsync();
 		} while (connectionState == NM_ACTIVE_CONNECTION_STATE_UNKNOWN || connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATING);
 		std::cout << "done" << std::endl;
+		return;
 	}
 	
 	if (!isAccessPointWPA(accessPoint))
