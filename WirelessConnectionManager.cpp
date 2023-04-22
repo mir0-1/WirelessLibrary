@@ -75,7 +75,7 @@ NMConnection* WirelessConnectionManager::makeConnectionFromAP()
 	
 }
 
-const gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* connection)
+gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* connection)
 {
 	GVariant* root = NULL;
 	asyncTransferUnit.extraData = (void*)&root;
@@ -97,7 +97,7 @@ const gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection
 		return NULL;
 	}
 
-	const gchar* passwordStr = g_variant_dup_string(passwordGVariant, NULL);
+	gchar* passwordStr = g_variant_dup_string(passwordGVariant, NULL);
 	
 	if (!g_strcmp0(passwordStr, ""))
 	{
@@ -141,7 +141,7 @@ NMConnection* WirelessConnectionManager::tryFindConnectionFromSSID()
 		if (ssidGBytesCandidate == NULL)
 			continue;
 		
-		const gchar* passwordCandidate = getConnectionPassword(NM_REMOTE_CONNECTION(currentConnection));
+		gchar* passwordCandidate = getConnectionPassword(NM_REMOTE_CONNECTION(currentConnection));
 
 		if (passwordCandidate == NULL)
 			continue;

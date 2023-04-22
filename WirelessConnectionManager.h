@@ -39,7 +39,7 @@ class WirelessConnectionManager
 		NMConnection* tryFindConnectionFromSSID();
 		NMConnection* makeConnectionFromAP();
 		void initConnection();
-		const gchar* getConnectionPassword(NMRemoteConnection* connection);
+		gchar* getConnectionPassword(NMRemoteConnection* connection);
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);
