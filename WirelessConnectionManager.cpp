@@ -96,8 +96,8 @@ bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
 NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* accessPoint)
 {	
 	NMConnection* connection = NM_CONNECTION(nm_simple_connection_new());
-	NMSettingWireless* settingWireless = nm_setting_wireless_new();
-	NMSettingWirelessSecurity* settingWirelessSecurity = nm_setting_wireless_security_new();
+	NMSettingWireless* settingWireless = NM_SETTING_WIRELESS(nm_setting_wireless_new());
+	NMSettingWirelessSecurity* settingWirelessSecurity = NM_SETTING_WIRELESS_SECURITY(nm_setting_wireless_security_new());
 	
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PROP_PSK, NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), NULL);
