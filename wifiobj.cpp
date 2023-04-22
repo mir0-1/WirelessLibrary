@@ -2,6 +2,6 @@
 
 int main()
 {
-	WirelessConnectionManager wirelessConnectionManager("Vakrilov04", "04051990");
+	WirelessConnectionManager wirelessConnectionManager("Redmi Note 10 Pro", "12345678");
 	return 0;
 }

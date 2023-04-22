@@ -62,9 +62,13 @@ void WirelessConnectionManager::initConnection()
 	
 	std::cout << "random debug message" << std::endl;
 	NMAccessPoint* accessPoint = findAccessPointBySSID();
-	NMConnection* connection = tryFindConnectionFromAP(accessPoint);
 	if (accessPoint == NULL)
-		std::cout << "Access point not present" << std::endl;
+	{
+		std::cout << "AP not present" << std::endl;
+		return;
+	}
+	
+	NMConnection* connection = tryFindConnectionFromAP(accessPoint);
 	if (connection == NULL)
 	{
 		std::cout << "connection null" << std::endl;
