@@ -100,7 +100,7 @@ NMConnection* WirelessConnectionManager::tryFindConnectionFromAP(NMAccessPoint* 
 	NMDeviceWifi* device = initWifiDevice();
 	const GPtrArray* connections = nm_client_get_connections(client);
 	
-	for (int j = 0; j < connections->len; j++)
+	for (int i = 0; i < connections->len; i++)
 	{
 		NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
 		if (nm_access_point_connection_valid(accessPoint, currentConnection))
