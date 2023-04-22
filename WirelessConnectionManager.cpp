@@ -86,9 +86,8 @@ void WirelessConnectionManager::initConnection()
 			std::cout << "signal connect" << std::endl;
 			g_signal_connect(activatingConnection, "notify::state", G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
 			//waitForAsync();
-		} while (connectionState == NM_ACTIVE_CONNECTION_STATE_UNKNOWN || connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATING);
-		if (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
-			std::cout << "done, activated" << std::endl;
+		} while (connectionState != NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
+		std::cout << "done, activated" << std::endl;
 		return;
 	}
 	
