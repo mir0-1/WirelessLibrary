@@ -115,8 +115,10 @@ NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* acce
 	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
 	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
 	
+	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
+	
 	std::cout << "before activation" << std::endl;
-	nm_client_add_and_activate_connection_async(client, connection, device, (const char*)accessPoint, NULL, connectionAddAndActivateReadyCallback, (gpointer)&asyncTransferUnit);
+	nm_client_add_and_activate_connection_async(client, connection, device, apPath, NULL, connectionAddAndActivateReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
 	bool successful = (bool)asyncTransferUnit.extraData;
 	
