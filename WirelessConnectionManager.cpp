@@ -131,6 +131,7 @@ NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* acce
 void WirelessConnectionManager::connectionAddAndActivateReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
+	std::cout << "in async callback" << std::endl;
 	NMActiveConnection* connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	asyncTransferUnit->extraData = (void*)(connResult != NULL);
 	asyncTransferUnit->thisObj->signalAsyncReady();
