@@ -59,13 +59,17 @@ void WirelessConnectionManager::initConnection()
 {
 	//if (hasInternetAccess())
 		//return;
-	std::cout << "In init connection" << std::endl;
-	bool accessPointPresent = false;
-	NMConnection* connection = tryFindConnectionFromAP(&accessPointPresent);
-	if (accessPointPresent == false)
+	
+	std::cout << "random debug message" << std::endl;
+	NMAccessPoint* accessPoint = findAccessPointBySSID();
+	NMConnection* connection = tryFindConnectionFromAP(accessPoint);
+	if (accessPoint == NULL)
 		std::cout << "Access point not present" << std::endl;
 	if (connection == NULL)
+	{
 		std::cout << "connection null" << std::endl;
+		
+	}
 	else
 	{
 		std::cout << nm_connection_get_uuid(connection) << std::endl;
@@ -75,27 +79,32 @@ void WirelessConnectionManager::initConnection()
 
 }
 
-NMConnection* WirelessConnectionManager::tryFindConnectionFromAP(bool* accessPointPresent)
+NMAccessPoint* findAccessPointBySSID()
 {
 	NMDeviceWifi* device = initWifiDevice();
 	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
-	const GPtrArray* connections = nm_client_get_connections(client);
 	
 	for (int i = 0; i < accessPoints->len; i++)
 	{
 		NMAccessPoint* currentAccessPoint = NM_ACCESS_POINT(accessPoints->pdata[i]);
 		GBytes* ssidGBytesCandidate = nm_access_point_get_ssid(currentAccessPoint);
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate))
-		{
-			if (*accessPointPresent == false)
-				*accessPointPresent = true;
-			for (int j = 0; j < connections->len; j++)
-			{
-				NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
-				if (nm_access_point_connection_valid(currentAccessPoint, currentConnection))
-					return currentConnection;
-			}
-		}
+			return currentAccessPoint;
+	}
+	
+	return NULL;
+}
+
+NMConnection* WirelessConnectionManager::tryFindConnectionFromAP(NMAccessPoint* accessPoint)
+{
+	NMDeviceWifi* device = initWifiDevice();
+	const GPtrArray* connections = nm_client_get_connections(client);
+	
+	for (int j = 0; j < connections->len; j++)
+	{
+		NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
+		if (nm_access_point_connection_valid(accessPoint, currentConnection))
+			return currentConnection;
 	}
 	
 	return NULL;
