@@ -39,7 +39,7 @@ class WirelessConnectionManager
 		void signalAsyncReady();
 		NMDeviceWifi* initWifiDevice();
 		bool hasInternetAccess();
-		NMConnection* tryFindConnectionFromAP();
+		NMConnection* tryFindConnectionFromAP(bool* accessPointPresent);
 		NMConnection* newConnectionFromAP();
 		void initConnection();
 		gchar* getConnectionPassword(NMRemoteConnection* connection);

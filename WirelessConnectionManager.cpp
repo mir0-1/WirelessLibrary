@@ -59,8 +59,11 @@ void WirelessConnectionManager::initConnection()
 {
 	//if (hasInternetAccess())
 		//return;
-	
-	NMConnection* connection = tryFindConnectionFromAP();
+	std::cout << "In init connection" << std::endl;
+	bool accessPointPresent = false;
+	NMConnection* connection = tryFindConnectionFromAP(&accessPointPresent);
+	if (accessPointPresent == false)
+		std::cout << "Access point not present" << std::endl;
 	if (connection == NULL)
 		std::cout << "connection null" << std::endl;
 	else
@@ -72,7 +75,7 @@ void WirelessConnectionManager::initConnection()
 
 }
 
-NMConnection* WirelessConnectionManager::tryFindConnectionFromAP()
+NMConnection* WirelessConnectionManager::tryFindConnectionFromAP(bool* accessPointPresent)
 {
 	NMDeviceWifi* device = initWifiDevice();
 	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
@@ -84,6 +87,8 @@ NMConnection* WirelessConnectionManager::tryFindConnectionFromAP()
 		GBytes* ssidGBytesCandidate = nm_access_point_get_ssid(currentAccessPoint);
 		if (g_bytes_equal(ssidGBytes, ssidGBytesCandidate))
 		{
+			if (*accessPointPresent == false)
+				*accessPointPresent = true;
 			for (int j = 0; j < connections->len; j++)
 			{
 				NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
