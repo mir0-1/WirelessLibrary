@@ -79,6 +79,7 @@ void WirelessConnectionManager::initConnection()
 		std::cout << "AP not WPA" << std::endl;
 		return;
 	}
+	std::cout << "before new conn" << std::endl;
 	connection = newConnectionFromAP(accessPoint);
 	if (connection != NULL)
 	{
