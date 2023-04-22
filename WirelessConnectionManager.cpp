@@ -102,16 +102,20 @@ bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
 
 NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* accessPoint)
 {	
+	std::cout << "creating conns" << std::endl;
 	NMConnection* connection = NM_CONNECTION(nm_simple_connection_new());
 	NMSettingWireless* settingWireless = NM_SETTING_WIRELESS(nm_setting_wireless_new());
 	NMSettingWirelessSecurity* settingWirelessSecurity = NM_SETTING_WIRELESS_SECURITY(nm_setting_wireless_security_new());
 	
+	std::cout << "g_obj_sets" << std::endl;
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PROP_PSK, NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), NULL);
 	
+	std::cout << "before add setting" << std::endl;
 	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
 	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
 	
+	std::cout << "before activation" << std::endl;
 	nm_client_add_and_activate_connection_async(client, connection, device, (const char*)accessPoint, NULL, connectionAddAndActivateReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
 	bool successful = (bool)asyncTransferUnit.extraData;
