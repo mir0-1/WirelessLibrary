@@ -62,7 +62,10 @@ void WirelessConnectionManager::initConnection()
 
 	NMConnection* connection = tryFindConnectionFromSSID();
 	if (connection != NULL)
+	{
+		std::cout << "Debug connection is ready" << std::endl;
 		return;
+	}
 	
 	connection = makeConnectionFromAP();
 	
