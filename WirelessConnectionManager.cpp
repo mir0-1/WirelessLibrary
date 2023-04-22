@@ -72,7 +72,7 @@ void WirelessConnectionManager::initConnection()
 	{
 		std::cout << "connection match" << std::endl;
 		const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
-		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateReadyCallback, (gpointer)&asyncTransferUnit);
+		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 		waitForAsync();
 		NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(asyncTransferUnit.extraData);
 		if (nm_active_connection_get_state(activatingConnection) == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
