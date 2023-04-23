@@ -46,13 +46,6 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
-void WirelessConnectionManager::remoteConnectionSecretsReadyCallback(CALLBACK_PARAMS_TEMPLATE)
-{
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	*((GVariant**)asyncTransferUnit->extraData) = nm_remote_connection_get_secrets_finish(NM_REMOTE_CONNECTION(srcObject), result, NULL);
-	asyncTransferUnit->thisObj->signalAsyncReady();
-}
-
 void WirelessConnectionManager::initConnection()
 {
 	if (hasInternetAccess())
@@ -161,15 +154,6 @@ NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* acce
 	return connection;
 }
 
-void WirelessConnectionManager::connectionAddAndActivateReadyCallback(CALLBACK_PARAMS_TEMPLATE)
-{
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	std::cout << "in async callback" << std::endl;
-	NMActiveConnection* connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
-	asyncTransferUnit->extraData = (void*)(connResult != NULL);
-	asyncTransferUnit->thisObj->signalAsyncReady();
-}
-
 NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID(NMDeviceWifi* device)
 {
 	const GPtrArray* accessPoints = nm_device_wifi_get_access_points(device);
@@ -200,42 +184,6 @@ NMConnection* WirelessConnectionManager::tryFindConnectionFromAP(NMAccessPoint* 
 	}
 	
 	return NULL;
-}
-
-gchar* WirelessConnectionManager::getConnectionPassword(NMRemoteConnection* connection)
-{
-	GVariant* root = NULL;
-	asyncTransferUnit.extraData = (void*)&root;
-	nm_remote_connection_get_secrets_async(NM_REMOTE_CONNECTION(connection), NM_SETTING_WIRELESS_SECURITY_SETTING_NAME, NULL, remoteConnectionSecretsReadyCallback, (gpointer)&asyncTransferUnit);
-	waitForAsync();
-
-	GVariant* wirelessSecurity = g_variant_lookup_value(root, NM_SETTING_WIRELESS_SECURITY_SETTING_NAME, G_VARIANT_TYPE_DICTIONARY);
-	if (wirelessSecurity == NULL)
-	{
-		g_variant_unref(root);
-		return NULL;
-	}
-
-	GVariant* passwordGVariant = g_variant_lookup_value(wirelessSecurity, PROP_PSK, G_VARIANT_TYPE_STRING);
-	if (passwordGVariant == NULL)
-	{
-		g_variant_unref(wirelessSecurity);
-		g_variant_unref(root);
-		return NULL;
-	}
-
-	gchar* passwordStr = g_variant_dup_string(passwordGVariant, NULL);
-	
-	if (!g_strcmp0(passwordStr, ""))
-	{
-		g_free(passwordStr);
-		passwordStr = NULL;
-	}
-
-	g_variant_unref(passwordGVariant);
-	g_variant_unref(wirelessSecurity);
-	g_variant_unref(root);
-	return passwordStr;
 }
 
 WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, const std::string& password)

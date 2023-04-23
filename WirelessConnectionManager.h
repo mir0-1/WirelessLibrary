@@ -31,8 +31,6 @@ class WirelessConnectionManager
 		static gpointer gLoopThreadFunc(gpointer thisObjData);
 		static void clientReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE);
-		static void remoteConnectionSecretsReadyCallback(CALLBACK_PARAMS_TEMPLATE);
-		static void connectionAddAndActivateReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer asyncTransferUnitPtr);
 		
@@ -46,7 +44,6 @@ class WirelessConnectionManager
 		NMConnection* tryFindConnectionFromAP(NMAccessPoint* accessPoint);
 		NMConnection* newConnectionFromAP(NMAccessPoint* accessPoint, NMDeviceWifi* device);
 		void initConnection();
-		gchar* getConnectionPassword(NMRemoteConnection* connection);
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);
