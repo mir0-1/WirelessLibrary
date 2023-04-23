@@ -139,7 +139,7 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 		asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
-gpointer WirelessConnectionManager::connectionActivateTimeoutCallback(gpointer asyncTransferUnitPtr)
+gboolean WirelessConnectionManager::connectionActivateTimeoutCallback(gpointer asyncTransferUnitPtr)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	asyncTransferUnit->thisObj->signalAsyncReady();
