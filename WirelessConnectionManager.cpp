@@ -46,7 +46,6 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 
 void WirelessConnectionManager::initConnection()
 {
-	std::cout << "main thread " << g_thread_self() << std::endl;
 	if (hasInternetAccess())
 	{
 		std::cout << "Network connection already active" << std::endl;
@@ -68,6 +67,7 @@ void WirelessConnectionManager::initConnection()
 			std::cout << "Existing connection activated" << std::endl;
 		else
 			std::cout << "Timeout when trying to activate existing connection" << std::endl;
+		return;
 	}
 	
 	if (!isAccessPointWPA(accessPoint))
