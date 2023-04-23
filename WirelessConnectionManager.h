@@ -41,7 +41,7 @@ class WirelessConnectionManager
 		NMDeviceWifi* initWifiDevice();
 		bool hasInternetAccess();
 		NMAccessPoint* findAccessPointBySSID(NMDeviceWifi* device);
-		void activateAndOrAddConnection(NMConnection* connection, NMAccessPoint* accessPoint, bool add);
+		void activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add);
 		bool isAccessPointWPA(NMAccessPoint* accessPoint);
 		NMConnection* tryFindConnectionFromAP(NMAccessPoint* accessPoint);
 		NMConnection* newConnectionFromAP(NMAccessPoint* accessPoint, NMDeviceWifi* device);

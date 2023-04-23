@@ -70,7 +70,7 @@ void WirelessConnectionManager::initConnection()
 	NMConnection* connection = tryFindConnectionFromAP(accessPoint);
 	if (connection != NULL)
 	{
-		activateAndOrAddConnection(connection, accessPoint, false);
+		activateAndOrAddConnection(connection, device, accessPoint, false);
 		std::cout << "existing connection activated" << std::endl;
 		return;
 	}
@@ -85,12 +85,12 @@ void WirelessConnectionManager::initConnection()
 	if (connection != NULL)
 	{
 		std::cout << "new conn from AP!!" << std::endl;
-		activateAndOrAddConnection(connection, accessPoint, true);
+		activateAndOrAddConnection(connection, device, accessPoint, true);
 		std::cout << "new connection added" << std::endl;
 	}
 }
 
-void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMAccessPoint* accessPoint, bool add)
+void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
 {
 	
 	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
