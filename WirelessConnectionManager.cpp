@@ -84,7 +84,6 @@ void WirelessConnectionManager::initConnection()
 	connection = newConnectionFromAP(accessPoint, device);
 	if (connection != NULL)
 	{
-		std::cout << "new conn from AP!!" << std::endl;
 		activateAndOrAddConnection(connection, device, accessPoint, true);
 		std::cout << "new connection added" << std::endl;
 	}
@@ -92,14 +91,16 @@ void WirelessConnectionManager::initConnection()
 
 void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
 {
-	
+	std::cout << "activateAndOrAddConnection" << std::endl;
 	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
 	if (!add)
 		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 	else
 		nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
+	std::cout << "async passed" << std::endl;
 	NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(asyncTransferUnit.extraData);
+	std::cout << "nm active connection " << activatingConnection << std::endl;
 	if (nm_active_connection_get_state(activatingConnection) == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 	{
 		std::cout << "activation ok, signaling not needed" << std::endl;
