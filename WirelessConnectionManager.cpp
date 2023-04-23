@@ -125,7 +125,6 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 	std::cout << "activate ready  - third? thread " << g_thread_self() << std::endl;
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
-	asyncTransferUnit.extraData = (void*)g_thread_self();
 	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 		asyncTransferUnit->thisObj->signalAsyncReady();
 }
