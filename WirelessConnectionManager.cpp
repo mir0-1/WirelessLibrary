@@ -48,6 +48,7 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 
 void WirelessConnectionManager::initConnection()
 {
+	std::cout << "main thread " << g_thread_self() << std::endl;
 	if (hasInternetAccess())
 	{
 		std::cout << "Network connection already active" << std::endl;
@@ -107,6 +108,7 @@ void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 
 void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE)
 {
+	std::cout << "activate start - sec thread " << g_thread_self() << std::endl;
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	bool add = (bool)asyncTransferUnit->extraData;
 	NMActiveConnection* connResult;
@@ -120,10 +122,17 @@ void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAM
 
 void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer asyncTransferUnitPtr)
 {
+	std::cout << "activate ready  - third? thread " << g_thread_self() << std::endl;
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
+	asyncTransferUnit.extraData = (void*)g_thread_self();
 	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 		asyncTransferUnit->thisObj->signalAsyncReady();
+}
+
+gpointer WirelessConnectionManager::activateConnectionTimeoutThreadFunc(gpointer asyncTransferUnitPtr)
+{
+	
 }
 
 bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
@@ -213,6 +222,7 @@ void WirelessConnectionManager::setPassword(const std::string& password)
 
 void WirelessConnectionManager::clientReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
+	std::cout << "client ready - sec thread " << g_thread_self() << std::endl;
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	asyncTransferUnit->thisObj->client = nm_client_new_finish(result, NULL);
 	asyncTransferUnit->thisObj->signalAsyncReady();
