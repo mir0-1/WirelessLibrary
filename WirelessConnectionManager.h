@@ -29,7 +29,7 @@ class WirelessConnectionManager
 		bool lastAsyncState;
 		
 		static gpointer gLoopThreadFunc(gpointer thisObjData);
-		static gpointer activateConnectionTimeoutThreadFunc(gpointer asyncTransferUnitPtr);
+		static gboolean activateConnectionTimeoutCallback(gpointer asyncTransferUnitPtr);
 		static void clientReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE);
