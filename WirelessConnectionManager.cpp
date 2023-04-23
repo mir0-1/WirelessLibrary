@@ -55,10 +55,12 @@ void WirelessConnectionManager::remoteConnectionSecretsReadyCallback(CALLBACK_PA
 
 void WirelessConnectionManager::initConnection()
 {
-	//if (hasInternetAccess())
-		//return;
+	if (hasInternetAccess())
+	{
+		std::cout << "Network connection already active" << std::endl;
+		return;
+	}
 	
-	std::cout << "random debug message" << std::endl;
 	NMDeviceWifi* device = initWifiDevice();
 	NMAccessPoint* accessPoint = findAccessPointBySSID(device);
 	if (accessPoint == NULL)
@@ -71,7 +73,7 @@ void WirelessConnectionManager::initConnection()
 	if (connection != NULL)
 	{
 		activateAndOrAddConnection(connection, device, accessPoint, false);
-		std::cout << "existing connection activated" << std::endl;
+		std::cout << "Existing connection activated" << std::endl;
 		return;
 	}
 	
@@ -80,7 +82,6 @@ void WirelessConnectionManager::initConnection()
 		std::cout << "AP not WPA" << std::endl;
 		return;
 	}
-	std::cout << "before new conn" << std::endl;
 	connection = newConnectionFromAP(accessPoint, device);
 	if (connection != NULL)
 	{
@@ -91,27 +92,23 @@ void WirelessConnectionManager::initConnection()
 
 void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
 {
-	std::cout << "activateAndOrAddConnection" << std::endl;
 	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
 	asyncTransferUnit.extraData = (void*)add;
+	
 	if (!add)
 		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 	else
 		nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
+	
 	waitForAsync();
-	std::cout << "async passed" << std::endl;
 	NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(asyncTransferUnit.extraData);
-	std::cout << "nm active connection " << activatingConnection << std::endl;
+	
 	if (nm_active_connection_get_state(activatingConnection) == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
-	{
-		std::cout << "activation ok, signaling not needed" << std::endl;
 		return;
-	}
+	
 	NMActiveConnectionState connectionState = (*(NMActiveConnectionState*)asyncTransferUnit.extraData);
-	std::cout << "signal connect attempt" << std::endl;
-	g_signal_connect(activatingConnection, "notify::state", G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
+	g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
 	waitForAsync();
-	std::cout << "done, activated" << std::endl;
 	return;
 }
 
