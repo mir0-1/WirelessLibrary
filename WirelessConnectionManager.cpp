@@ -93,6 +93,7 @@ void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 {
 	std::cout << "activateAndOrAddConnection" << std::endl;
 	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
+	asyncTransferUnit.extraData = (void*)add;
 	if (!add)
 		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 	else
@@ -117,7 +118,12 @@ void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE)
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	NMActiveConnection* connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
+	bool add = (bool)asyncTransferUnit->extraData;
+	NMActiveConnection* connResult;
+	if (!add)
+		connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
+	else
+		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	asyncTransferUnit->extraData = (void*)connResult;
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
