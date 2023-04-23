@@ -118,6 +118,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	{
 		std::cout << "in !successful " << gCancellable << std::endl;
 		g_cancellable_cancel(gCancellable);
+		std::cout << "is canceled? " << g_cancellable_is_canceled(gCancellable) << std::endl;
 	}
 	
 	g_source_destroy(gTimeoutSource);
