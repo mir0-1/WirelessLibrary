@@ -154,25 +154,7 @@ NMConnection* WirelessConnectionManager::newConnectionFromAP(NMAccessPoint* acce
 	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
 	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
 	
-	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
-	
-	nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionAddAndActivateReadyCallback, (gpointer)&asyncTransferUnit);
-	waitForAsync();
-	bool successful = (bool)asyncTransferUnit.extraData;
-	
-	if (successful)
-	{
-		g_object_unref(settingWireless);
-		g_object_unref(settingWirelessSecurity);
-		return connection;
-	}
-	else
-	{
-		g_object_unref(G_OBJECT(connection));
-		g_object_unref(G_OBJECT(settingWireless));
-		g_object_unref(G_OBJECT(settingWirelessSecurity));
-		return NULL;
-	}
+	return connection;
 }
 
 void WirelessConnectionManager::connectionAddAndActivateReadyCallback(CALLBACK_PARAMS_TEMPLATE)
