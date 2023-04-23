@@ -133,9 +133,15 @@ void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAM
 	bool add = (bool)asyncTransferUnit->extraData;
 	NMActiveConnection* connResult;
 	if (!add)
+	{
 		connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
+		std::cout << "activate finish" << std::endl;
+	}
 	else
+	{
 		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
+		std::cout << "add_and_activate finish" << std::endl;
+	}
 	asyncTransferUnit->extraData = (void*)connResult;
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
