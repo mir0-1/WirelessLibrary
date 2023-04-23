@@ -106,7 +106,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	
 	NMActiveConnectionState connectionState = (*(NMActiveConnectionState*)asyncTransferUnit.extraData);
 	gulong signalHandlerId = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
-	GSource* gTimeoutSource = g_timeout_source_new(10);
+	GSource* gTimeoutSource = g_timeout_source_new(1);
 	g_source_attach(gTimeoutSource, gMainContext);
 	g_source_set_callback(gTimeoutSource, connectionActivateTimeoutCallback, (gpointer)&asyncTransferUnit, NULL);
 	waitForAsync();
