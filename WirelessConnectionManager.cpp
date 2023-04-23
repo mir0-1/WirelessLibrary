@@ -101,11 +101,12 @@ void WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 		return;
 	
 	NMActiveConnectionState connectionState = (*(NMActiveConnectionState*)asyncTransferUnit.extraData);
+	GObject* gConnSignal = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
 	GSource* gTimeoutSource = g_timeout_source_new_seconds(2);
 	g_source_attach(gTimeoutSource, gMainContext);
 	g_source_set_callback(gTimeoutSource, connectionActivateTimeoutCallback, (gpointer)&asyncTransferUnit, NULL);
-	g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
 	waitForAsync();
+	g_signal_disconnect_handler(activatingConnection, gConnSignal);
 	if (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 		std::cout << "activation" << std::endl;
 	else
