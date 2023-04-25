@@ -182,7 +182,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
-		if (g_strcmp0(nm_setting_ip_config_get_method(settingIP, METHOD_SHARED))
+		if (g_strcmp0(nm_setting_ip_config_get_method(settingIP), METHOD_SHARED))
 		{
 			logger << "ip4 shared fail" << std::endl;
 			continue;
