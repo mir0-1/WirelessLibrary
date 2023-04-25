@@ -115,7 +115,7 @@ bool WirelessConnectionManager::initSelfHotspot(NMDeviceWifi* device)
 		}
 		logger << "Existing hotspot activation failed" << std::endl;
 	}
-	logger << "Trying to create a existing hotspot" << std::endl;
+	logger << "Trying to create a new hotspot" << std::endl;
 	connection = newConnection(device, true);
 	if (connection != NULL)
 	{
@@ -287,17 +287,21 @@ bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
 
 NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, bool selfHotspot)
 {	
+	logger << "-connection" << std::endl;
 	NMConnection* connection = NM_CONNECTION(nm_simple_connection_new());
 	
+	logger << "-settingWireless" << std::endl;
 	NMSettingWireless* settingWireless = NM_SETTING_WIRELESS(nm_setting_wireless_new());
 	NMSettingWirelessSecurity* settingWirelessSecurity = NM_SETTING_WIRELESS_SECURITY(nm_setting_wireless_security_new());
 	
+	logger << "-settingWirelessSecurity" << std::endl;
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), 
 				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PSK, 
 				NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), 
 				NULL);
-				
+	
+	logger << "-selfHotspot" << std::endl;
 	if (selfHotspot)
 	{
 		g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_MODE, MODE_AP,
@@ -314,6 +318,7 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 		
 		nm_connection_add_setting(connection, NM_SETTING(settingIP));
 	}
+	logger << "-after selfHotspot" << std::endl;
 	
 	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
 	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
