@@ -27,6 +27,7 @@ class WirelessConnectionManager
 		GMutex gMutex;
 		GCond gCond;
 		AsyncTransferUnit asyncTransferUnit;
+		guint timeout = 30;
 		bool lastAsyncState;
 		
 		static gpointer gLoopThreadFunc(gpointer thisObjData);
