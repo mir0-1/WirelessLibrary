@@ -18,11 +18,12 @@ class WirelessConnectionManager
 	private:
 		std::string ssid;
 		std::string password;
-		GBytes* ssidGBytes;
-		NMClient* client;
-		GMainContext* gMainContext;
-		GMainLoop* gMainLoop;
-		GThread* gLoopThread;
+		std::ostream& logger;
+		GBytes* ssidGBytes = NULL;
+		NMClient* client = NULL;
+		GMainContext* gMainContext = NULL;
+		GMainLoop* gMainLoop = NULL;
+		GThread* gLoopThread = NULL;
 		GMutex gMutex;
 		GCond gCond;
 		AsyncTransferUnit asyncTransferUnit;
@@ -43,7 +44,7 @@ class WirelessConnectionManager
 		bool activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add);
 		bool isAccessPointWPA(NMAccessPoint* accessPoint);
 		NMConnection* tryFindConnectionFromAP(NMAccessPoint* accessPoint);
-		NMConnection* newConnectionFromAP(NMAccessPoint* accessPoint, NMDeviceWifi* device);
+		NMConnection* newConnection(NMDeviceWifi* device);
 		void initConnection();
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
