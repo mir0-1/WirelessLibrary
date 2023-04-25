@@ -278,11 +278,7 @@ void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAM
 	if (!add)
 		connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	else
-	{
-		GError* gerror = NULL;
-		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, &gerror);
-		std::cout << "gerror: " << gerror->message << std::endl;
-	}
+		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	asyncTransferUnit->extraData = (void*)connResult;
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
@@ -316,13 +312,11 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 	NMSettingWirelessSecurity* settingWirelessSecurity = NM_SETTING_WIRELESS_SECURITY(nm_setting_wireless_security_new());
 	NMSettingIPConfig* settingIP = NULL;
 	
-	logger << "segmentation check" << std::endl;
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), 
 				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, KEY_MGMT_WPA_PSK, 
 				NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), 
 				NULL);
-	logger << "segmentation check" << std::endl;
 	
 	if (selfHotspot)
 	{
