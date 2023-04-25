@@ -54,7 +54,7 @@ void WirelessConnectionManager::initConnection()
 	RETURN_IF(hasInternetAccess(), "Network connection is already present");
 	
 	NMDeviceWifi* device = initWifiDevice();
-	RETURN_IF(device, "Device was NULL");
+	RETURN_IF(device == NULL, "Device was NULL");
 	NMAccessPoint* accessPoint = findAccessPointBySSID(device);
 	NMConnection* connection;
 	for(;;tryHotspot = true)
