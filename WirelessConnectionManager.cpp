@@ -222,7 +222,10 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	
 	waitForAsync();
 	if (asyncTransferUnit.extraData == NULL)
+	{
+		logger << "we fail at extraData" << std::endl;
 		return false;
+	}
 	NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(asyncTransferUnit.extraData);
 	
 	NMActiveConnectionState connectionState = nm_active_connection_get_state(activatingConnection);
