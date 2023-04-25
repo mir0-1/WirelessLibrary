@@ -303,9 +303,9 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 												NM_SETTING_WIRELESS_BAND, BAND_BG,
 												NULL);
 		
-		nm_settings_wireless_security_add_proto(settingWirelessSecurity, PROTO_RSN);
-		nm_settings_wireless_security_add_pairwise(settingWirelessSecurity, PAIRWISE_CCMP);
-		nm_settings_wireless_security_add_group(settingWirelessSecurity, GROUP_CCMP);
+		nm_setting_wireless_security_add_proto(settingWirelessSecurity, PROTO_RSN);
+		nm_setting_wireless_security_add_pairwise(settingWirelessSecurity, PAIRWISE_CCMP);
+		nm_setting_wireless_security_add_group(settingWirelessSecurity, GROUP_CCMP);
 		
 		NMSettingIPConfig* settingIP = NM_SETTING_IP_CONFIG(nm_setting_ip4_config_new());
 		
