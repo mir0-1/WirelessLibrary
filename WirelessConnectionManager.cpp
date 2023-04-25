@@ -174,7 +174,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
-		NMSettingIP4Config* settingIP = nm_connection_get_setting_ip4_config(currentConnection);
+		NMSettingIPConfig* settingIP = nm_connection_get_setting_ip4_config(currentConnection);
 		
 		if (settingIP == NULL)
 		{
