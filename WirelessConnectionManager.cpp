@@ -233,7 +233,7 @@ bool WirelessConnectionManager::findConnectionProperty(NMSettingWirelessSecurity
 
 bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
 {
-	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
+	const char* apPath = (accessPoint == NULL) ? NULL : nm_object_get_path(NM_OBJECT(accessPoint));
 	asyncTransferUnit.extraData = (void*)add;
 	
 	if (!add)
