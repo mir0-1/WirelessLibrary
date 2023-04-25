@@ -104,6 +104,7 @@ bool WirelessConnectionManager::initExternalConnection(NMDeviceWifi* device)
 
 bool WirelessConnectionManager::initSelfHotspot(NMDeviceWifi* device)
 {
+	logger << "Trying to find existing self hotspot config" << std::endl;
 	NMConnection* connection = tryFindHotspotConnection();
 	if (connection != NULL)
 	{
@@ -114,7 +115,7 @@ bool WirelessConnectionManager::initSelfHotspot(NMDeviceWifi* device)
 		}
 		logger << "Existing hotspot activation failed" << std::endl;
 	}
-	
+	logger << "Trying to create a existing hotspot" << std::endl;
 	connection = newConnection(device, true);
 	if (connection != NULL)
 	{
