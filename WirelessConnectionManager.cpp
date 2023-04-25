@@ -93,11 +93,10 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	const char* apPath = nm_object_get_path(NM_OBJECT(accessPoint));
 	asyncTransferUnit.extraData = (void*)add;
 	
-	GCancellable* gCancellable = g_cancellable_new();
 	if (!add)
-		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, gCancellable, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
+		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 	else
-		nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, gCancellable, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
+		nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
 	
 	waitForAsync();
 	if (asyncTransferUnit.extraData == NULL)
@@ -109,6 +108,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	
 	NMActiveConnectionState connectionState = (*(NMActiveConnectionState*)asyncTransferUnit.extraData);
 	gulong signalHandlerId = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
+	timeout = 30;
 	GSource* gTimeoutSource = g_timeout_source_new_seconds(timeout);
 	g_source_set_callback(gTimeoutSource, connectionActivateTimeoutCallback, (gpointer)&asyncTransferUnit, NULL);
 	g_source_attach(gTimeoutSource, gMainContext);
@@ -116,9 +116,6 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	g_signal_handler_disconnect(activatingConnection, signalHandlerId);
 	
 	bool successful = (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
-	
-	if (!successful)
-		g_cancellable_cancel(gCancellable);
 	
 	g_source_destroy(gTimeoutSource);
 	g_source_unref(gTimeoutSource);
