@@ -7,7 +7,6 @@
 #define KEY_MGMT_WPA_IEE8021X "ieee8021x"
 
 #define PROP_PSK "psk"
-#define CONTINUE_IF(condition, log_message) if (condition) {logger << log_message << std::endl; continue;}
 
 gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 {
@@ -93,7 +92,7 @@ void WirelessConnectionManager::initExternalConnection()
 	}
 	if (activateAndOrAddConnection(connection, device, accessPoint, true))
 	{
-		logger << "New connection added" << std::endl;
+		logger << "New connection added and activated" << std::endl;
 		return;
 	}
 	logger << "Could not activate connection" << std::endl;
@@ -123,7 +122,21 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	g_clear_signal_handler(&signalHandlerId, activatingConnection);
 	connectionState = nm_active_connection_get_state(activatingConnection);
 	
-	return (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
+	if (add && connectionState != NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+	{
+		nm_remote_connection_delete_async(NM_REMOTE_CONNECTION(connection), NULL, connectionDeleteReadyCallback, (gpointer)&asyncTransferUnit);
+		waitForAsync();
+		return false;
+	}
+	
+	return true;
+}
+
+void WirelessConnectionManager::connectionDeleteReadyCallback(CALLBACK_PARAMS_TEMPLATE)
+{
+	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
+	nm_remote_connection_delete_finish(NM_REMOTE_CONNECTION(srcObject), result, NULL);
+	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
 void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE)

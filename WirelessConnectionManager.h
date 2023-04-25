@@ -33,6 +33,7 @@ class WirelessConnectionManager
 		static void clientReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE);
+		static void connectionDeleteReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer asyncTransferUnitPtr);
 		
 		void waitForAsync();
