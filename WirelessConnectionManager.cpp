@@ -213,7 +213,7 @@ NMAccessPoint* WirelessConnectionManager::findAccessPointBySSID(NMDeviceWifi* de
 	return NULL;
 }
 
-NMConnection* WirelessConnectionManager::tryFindConnectionFromAP(NMAccessPoint* accessPoint)
+NMConnection* WirelessConnectionManager::tryFindExternalConnection(NMAccessPoint* accessPoint)
 {
 	const GPtrArray* connections = nm_client_get_connections(client);
 	
