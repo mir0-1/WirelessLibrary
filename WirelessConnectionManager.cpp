@@ -188,6 +188,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
+		logger << "we made it to the end" << std::endl;
 		return currentConnection;
 	}
 	
