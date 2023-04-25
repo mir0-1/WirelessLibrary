@@ -44,9 +44,9 @@ class WirelessConnectionManager
 		NMAccessPoint* findAccessPointBySSID(NMDeviceWifi* device);
 		bool activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add);
 		bool isAccessPointWPA(NMAccessPoint* accessPoint);
-		NMConnection* tryFindConnectionFromAP(NMAccessPoint* accessPoint);
-		NMConnection* newConnection(NMDeviceWifi* device);
-		void initConnection();
+		NMConnection* tryFindExternalConnection(NMAccessPoint* accessPoint);
+		NMConnection* newExternalConnection(NMDeviceWifi* device);
+		void initExternalConnection();
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);

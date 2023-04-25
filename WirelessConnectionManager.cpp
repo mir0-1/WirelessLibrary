@@ -8,8 +8,6 @@
 
 #define PROP_PSK "psk"
 #define CONTINUE_IF(condition, log_message) if (condition) {logger << log_message << std::endl; continue;}
-#define RETURN_IF(condition, log_message) if (condition) {logger << log_message << std::endl; return;}
-#define RETURN_VAL_IF(condition, log_message, val) if (condition) {logger << log_message << std::endl; return val;}
 
 gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 {
@@ -47,49 +45,59 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
-void WirelessConnectionManager::initConnection()
+void WirelessConnectionManager::initExternalConnection()
 {
-	bool tryHotspot = false;
-	
-	RETURN_IF(hasInternetAccess(), "Network connection is already present");
+	if (hasInternetAccess())
+	{
+		logger << "Connection with Internet access already active" << std::endl;
+		return;
+	}
 	
 	NMDeviceWifi* device = initWifiDevice();
-	RETURN_IF(device == NULL, "Device was NULL");
+	
+	if (device == NULL)
+	{
+		logger << "Device was NULL" << std::endl;
+		return;
+	}
+	
 	NMAccessPoint* accessPoint = findAccessPointBySSID(device);
 	NMConnection* connection;
-	for(;;tryHotspot = true)
+	
+	if (accessPoint == NULL)
 	{
-		if (tryHotspot != true)
-		{
-			CONTINUE_IF(accessPoint == NULL, "Access point not present");
-			
-			connection = tryFindConnectionFromAP(accessPoint);
-			if (connection != NULL)
-			{
-				logger << "Found connection from AP" << std::endl;
-				if (activateAndOrAddConnection(connection, device, accessPoint, false))
-					logger << "Existing connection activated" << std::endl;
-				else
-					logger << "Timeout when trying to activate existing connection" << std::endl;
-				return;
-			}
-			logger << "Could not find suitable existing connection" << std::endl;
-			
-			CONTINUE_IF(!isAccessPointWPA(accessPoint), "Access point not WPA");
-		}
-		
-		connection = newConnection(device);
-		if (connection != NULL)
-		{
-			if (activateAndOrAddConnection(connection, device, accessPoint, true))
-			{
-				logger << "new connection added" << std::endl;
-				return;
-			}
-			else
-				logger << "timeout on newly added connection activation" << std::endl;
-				
-		}
+		logger << "Access point not present" << std::endl;
+		return;
+	}
+	
+	connection = tryFindExternalConnection(accessPoint);
+	if (connection != NULL)
+	{
+		logger << "Found connection from AP" << std::endl;
+		if (activateAndOrAddConnection(connection, device, accessPoint, false))
+			logger << "Existing connection activated" << std::endl;
+		else
+			logger << "Failed trying to activate existing connection" << std::endl;
+		return;
+	}
+	logger << "Could not find suitable existing connection" << std::endl;
+	
+	if(!isAccessPointWPA(accessPoint)
+	{
+		logger << "Access point not WPA" << std::endl;
+		return;
+	}
+	
+	connection = newExternalConnection(device);
+	if (connection == NULL)
+	{
+		logger << "Failed added connection activation" << std::endl;
+		return;
+	}
+	if (activateAndOrAddConnection(connection, device, accessPoint, true))
+	{
+		logger << "New connection added" << std::endl;
+		return;
 	}
 }
 
@@ -105,10 +113,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	
 	waitForAsync();
 	if (asyncTransferUnit.extraData == NULL)
-	{
-		logger << "extraData is NULL" << std::endl;
 		return false;
-	}
 	NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(asyncTransferUnit.extraData);
 	
 	NMActiveConnectionState connectionState = nm_active_connection_get_state(activatingConnection);
@@ -121,8 +126,8 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	g_source_set_callback(gTimeoutSource, connectionActivateTimeoutCallback, (gpointer)&asyncTransferUnit, NULL);
 	g_source_attach(gTimeoutSource, gMainContext);
 	waitForAsync();
-	connectionState = nm_active_connection_get_state(activatingConnection);
 	g_signal_handler_disconnect(activatingConnection, signalHandlerId);
+	connectionState = nm_active_connection_get_state(activatingConnection);
 	
 	bool successful = (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
 	
@@ -173,7 +178,7 @@ bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
 	return false;
 }
 
-NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device)
+NMConnection* WirelessConnectionManager::newExternalConnection(NMDeviceWifi* device)
 {	
 	NMConnection* connection = NM_CONNECTION(nm_simple_connection_new());
 	
@@ -235,7 +240,7 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
-	initConnection();
+	initExternalConnection();
 }
 
 void WirelessConnectionManager::setSSID(const std::string& ssid)
