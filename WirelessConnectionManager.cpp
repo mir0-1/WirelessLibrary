@@ -316,11 +316,13 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 	NMSettingWirelessSecurity* settingWirelessSecurity = NM_SETTING_WIRELESS_SECURITY(nm_setting_wireless_security_new());
 	NMSettingIPConfig* settingIP = NULL;
 	
+	logger << "segmentation check" << std::endl;
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), 
 				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, KEY_MGMT_WPA_PSK, 
 				NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), 
 				NULL);
+	logger << "segmentation check" << std::endl;
 	
 	if (selfHotspot)
 	{
