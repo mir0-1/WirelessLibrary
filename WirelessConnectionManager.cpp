@@ -121,6 +121,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	//g_source_set_callback(gTimeoutSource, connectionActivateTimeoutCallback, (gpointer)&asyncTransferUnit, NULL);
 	//g_source_attach(gTimeoutSource, gMainContext);
 	waitForAsync();
+	connectionState = nm_active_connection_get_state(activatingConnection);
 	g_signal_handler_disconnect(activatingConnection, signalHandlerId);
 	
 	bool successful = (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
@@ -149,10 +150,7 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
 	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
-	{
-		std::cout << "activated!!!" << std::endl;
 		asyncTransferUnit->thisObj->signalAsyncReady();
-	}
 }
 
 gboolean WirelessConnectionManager::connectionActivateTimeoutCallback(gpointer asyncTransferUnitPtr)
