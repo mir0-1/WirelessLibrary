@@ -108,6 +108,7 @@ bool WirelessConnectionManager::initExternalConnection()
 bool WirelessConnectionManager::initHotspot()
 {
 	tryFindHotspotConnection();
+	return false;
 }
 
 NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
@@ -173,7 +174,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
-		NMSettingIP4Config* settingIP = nm_connection_get_setting_ip4_config(currentConnection);
+		NMSettingIP4Config* settingIP = NM_SETTING_IP4_CONFIG(nm_connection_get_setting_ip4_config(currentConnection));
 		
 		if (settingIP == NULL)
 		{
