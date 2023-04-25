@@ -119,7 +119,7 @@ bool WirelessConnectionManager::initSelfHotspot(NMDeviceWifi* device)
 	connection = newConnection(device, true);
 	if (connection != NULL)
 	{
-		if (activateAndOrAddConnection(connection, device, NULL, false))
+		if (activateAndOrAddConnection(connection, device, NULL, true))
 		{
 			logger << "Successful new hotspot activation" << std::endl;
 			return true;
