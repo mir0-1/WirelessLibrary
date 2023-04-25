@@ -66,6 +66,7 @@ void WirelessConnectionManager::initConnection()
 			connection = tryFindConnectionFromAP(accessPoint);
 			if (connection != NULL)
 			{
+				logger << "Found connection from AP" << std::endl;
 				if (activateAndOrAddConnection(connection, device, accessPoint, false))
 					logger << "Existing connection activated" << std::endl;
 				else
