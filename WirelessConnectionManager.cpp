@@ -279,9 +279,9 @@ void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAM
 		connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	else
 	{
-		GError gerror;
+		GError* gerror = g_error_new();
 		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, &gerror);
-		std::cout << "gerror: " << gerror.message << std::endl;
+		std::cout << "gerror: " << gerror->message << std::endl;
 	}
 	asyncTransferUnit->extraData = (void*)connResult;
 	asyncTransferUnit->thisObj->signalAsyncReady();
