@@ -48,7 +48,7 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
-bool WirelessConnectionManager::initExternalConnection()
+bool WirelessConnectionManager::initExternalConnection(NMDeviceWifi* device)
 {
 	if (hasInternetAccess())
 	{
@@ -56,11 +56,9 @@ bool WirelessConnectionManager::initExternalConnection()
 		return true;
 	}
 	
-	NMDeviceWifi* device = initWifiDevice();
-	
 	if (device == NULL)
 	{
-		logger << "Device was NULL" << std::endl;
+		logger << "Device is NULL" << std::endl;
 		return false;
 	}
 	
@@ -105,9 +103,20 @@ bool WirelessConnectionManager::initExternalConnection()
 	return false;
 }
 
-bool WirelessConnectionManager::initHotspot()
+bool WirelessConnectionManager::initHotspot(NMDeviceWifi* device)
 {
-	tryFindHotspotConnection();
+	
+	NMConnection* connection = tryFindHotspotConnection();
+	if (connection != NULL)
+	{
+		if (activateAndOrAddConnection(connection, device, NULL, false))
+		{
+			logger << "Successful hotspot activation" << std::endl;
+			return true;
+		}
+	}
+	
+	logger << "Hotspot activation failed" << std::endl;
 	return false;
 }
 
@@ -359,7 +368,8 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
-	//initExternalConnection();
+	NMDeviceWifi* device = initWifiDevice();
+	//initExternalConnection(device);
 	initHotspot();
 }
 

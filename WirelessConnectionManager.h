@@ -53,8 +53,8 @@ class WirelessConnectionManager
 		NMConnection* tryFindExternalConnection(NMAccessPoint* accessPoint);
 		NMConnection* tryFindHotspotConnection();
 		NMConnection* newExternalConnection(NMDeviceWifi* device);
-		bool initExternalConnection();
-		bool initHotspot();
+		bool initExternalConnection(NMDeviceWifi* device);
+		bool initHotspot(NMDeviceWifi* device);
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);
