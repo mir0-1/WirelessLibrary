@@ -318,7 +318,7 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 	
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), 
-				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PSK, 
+				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, KEY_MGMT_WPA_PSK, 
 				NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), 
 				NULL);
 	
