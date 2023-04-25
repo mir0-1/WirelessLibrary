@@ -81,9 +81,13 @@ void WirelessConnectionManager::initConnection()
 		if (connection != NULL)
 		{
 			if (activateAndOrAddConnection(connection, device, accessPoint, true))
+			{
 				logger << "new connection added" << std::endl;
+				return;
+			}
 			else
 				logger << "timeout on newly added connection activation" << std::endl;
+				
 		}
 	}
 }
