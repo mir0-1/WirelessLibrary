@@ -324,6 +324,7 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 	if (selfHotspot)
 		nm_connection_add_setting(connection, NM_SETTING(settingIP));
 	
+	logger << "before return" << std::endl;
 	return connection;
 }
 
