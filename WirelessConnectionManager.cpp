@@ -137,7 +137,7 @@ void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAM
 		connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	else
 		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
-	asyncTransferUnitPtr->thisObj->logger << "connResult after immediate activation:" << connResult << std::endl;
+	std::cout << "connResult after immediate activation:" << connResult << std::endl;
 	asyncTransferUnit->extraData = (void*)connResult;
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
