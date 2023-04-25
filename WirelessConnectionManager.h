@@ -13,6 +13,9 @@ typedef struct
 	void *extraData;
 } AsyncTransferUnit;
 
+typedef guint32 (*ConnectionPropertyLengthFunc)(NMSettingWirelessSecurity*);
+typedef const char* (*ConnectionPropertyIndexFunc)(NMSettingWirelessSecurity*, guint32);
+
 class WirelessConnectionManager
 {
 	private:
@@ -43,9 +46,15 @@ class WirelessConnectionManager
 		NMAccessPoint* findAccessPointBySSID(NMDeviceWifi* device);
 		bool activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add);
 		bool isAccessPointWPA(NMAccessPoint* accessPoint);
+		bool findConnectionProto(NMSettingWirelessSecurity* wirelessSecurity, const char* value);
+		bool findConnectionPairwiseEncryption(NMSettingWirelessSecurity* wirelessSecurity, const char* value);
+		bool findConnectionGroupEncryption(NMSettingWirelessSecurity* wirelessSecurity, const char* value);
+		bool findConnectionProperty(NMSettingWirelessSecurity* wirelessSecurity, const char *value, ConnectionPropertyLengthFunc lengthFunc, ConnectionPropertyIndexFunc indexFunc);
 		NMConnection* tryFindExternalConnection(NMAccessPoint* accessPoint);
+		NMConnection* tryFindHotspotConnection();
 		NMConnection* newExternalConnection(NMDeviceWifi* device);
-		void initExternalConnection();
+		bool initExternalConnection();
+		bool initHotspot();
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);

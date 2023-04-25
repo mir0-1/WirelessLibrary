@@ -3,10 +3,14 @@
 
 #define KEY_MGMT_WPA_PSK "wpa-psk"
 #define KEY_MGMT_WPA_EAP "wpa-eap"
-#define KEY_MGMT_WPA_ADHOC "wpa-none"
 #define KEY_MGMT_WPA_IEE8021X "ieee8021x"
-
-#define PROP_PSK "psk"
+#define PSK "psk"
+#define MODE_AP "ap"
+#define BAND_BG "bg"
+#define PROTO_RSN "rsn"
+#define PAIRWISE_CCMP "ccmp"
+#define GROUP_CCMP "ccmp"
+#define METHOD_SHARED "shared"
 
 gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
 {
@@ -44,12 +48,12 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 	asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
-void WirelessConnectionManager::initExternalConnection()
+bool WirelessConnectionManager::initExternalConnection()
 {
 	if (hasInternetAccess())
 	{
 		logger << "Connection with Internet access already active" << std::endl;
-		return;
+		return true;
 	}
 	
 	NMDeviceWifi* device = initWifiDevice();
@@ -57,7 +61,7 @@ void WirelessConnectionManager::initExternalConnection()
 	if (device == NULL)
 	{
 		logger << "Device was NULL" << std::endl;
-		return;
+		return false;
 	}
 	
 	NMAccessPoint* accessPoint = findAccessPointBySSID(device);
@@ -65,40 +69,155 @@ void WirelessConnectionManager::initExternalConnection()
 	
 	if (accessPoint == NULL)
 		logger << "Access point not present" << std::endl;
-	else if (!isAccessPointWPA(accessPoint))
+	if (!isAccessPointWPA(accessPoint))
 	{
 		accessPoint = NULL;
 		logger << "Access point not WPA" << std::endl;
+		return false;
 	}
-	else
+
+	connection = tryFindExternalConnection(accessPoint);
+	if (connection != NULL)
 	{
-		connection = tryFindExternalConnection(accessPoint);
-		if (connection != NULL)
+		logger << "Found connection from AP" << std::endl;
+		if (activateAndOrAddConnection(connection, device, accessPoint, false))
 		{
-			logger << "Found connection from AP" << std::endl;
-			if (activateAndOrAddConnection(connection, device, accessPoint, false))
-			{
-				logger << "Existing connection activated" << std::endl;
-				return;
-			}
-			else
-				logger << "Failed trying to activate existing connection" << std::endl;
+			logger << "Existing connection activated" << std::endl;
+			return true;
 		}
-		logger << "Could not find suitable existing connection" << std::endl;
+		logger << "Failed trying to activate existing connection" << std::endl;
+		return false;
 	}
+	logger << "Could not find suitable existing connection" << std::endl;
 	
 	connection = newExternalConnection(device);
 	if (connection == NULL)
 	{
 		logger << "Failed added connection activation" << std::endl;
-		return;
+		return false;
 	}
 	if (accessPoint != NULL && activateAndOrAddConnection(connection, device, accessPoint, true))
 	{
 		logger << "New connection added and activated" << std::endl;
-		return;
+		return true;
 	}
 	logger << "Could not activate connection" << std::endl;
+	return false;
+}
+
+bool WirelessConnectionManager::initHotspot()
+{
+	tryFindHotspotConnection();
+}
+
+NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
+{
+	const GPtrArray* connections = nm_client_get_connections(client);
+	
+	for (int i = 0; i < connections->len; i++)
+	{
+		logger << "loop iteration: " << i << std::endl;
+		NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
+		
+		if (!nm_connection_is_type(currentConnection, NM_SETTING_WIRELESS_NAME))
+		{
+			logger << "hotspot type" << std::endl;
+			continue;
+		}
+		
+		NMSettingWireless* settingWireless = nm_connection_get_setting_wireless(currentConnection);
+		if (settingWireless == NULL)
+		{
+			logger << "settingWireless null" << std::endl;
+			continue;
+		}
+		
+		if (g_strcmp0(nm_setting_wireless_get_mode(settingWireless), MODE_AP))
+		{
+			logger << "ap mode fail" << std::endl;
+			continue;
+		}
+		
+		if (g_strcmp0(nm_setting_wireless_get_band(settingWireless), BAND_BG))
+			continue;
+		
+		NMSettingWirelessSecurity* settingWirelessSecurity = nm_connection_get_setting_wireless_security(currentConnection);
+		
+		if (settingWirelessSecurity == NULL)
+		{
+			logger << "wirelessSecurity null" << std::endl;
+			continue;
+		}
+		
+		if (g_strcmp0(nm_setting_wireless_security_get_key_mgmt(settingWirelessSecurity), KEY_MGMT_WPA_PSK))
+		{
+			logger << "key_mgmt fail" << std::endl;
+			continue;
+		}
+		
+		if (!findConnectionProto(settingWirelessSecurity, PROTO_RSN))
+		{
+			logger << "proto rsn fail" << std::endl;
+			continue;
+		}
+		
+		if (!findConnectionPairwiseEncryption(settingWirelessSecurity, PAIRWISE_CCMP))
+		{
+			logger << "pairwise encryption fail" << std::endl;
+			continue;
+		}
+		
+		if (!findConnectionGroupEncryption(settingWirelessSecurity, GROUP_CCMP))
+		{
+			logger << "group encryption fail" << std::endl;
+			continue;
+		}
+		
+		NMSettingIP4Config* settingIP = nm_connection_get_setting_ip4_config(currentConnection);
+		
+		if (settingIP == NULL)
+		{
+			logger << "ip4 setting null" << std::endl;
+			continue;
+		}
+		
+		if (g_strcmp0(nm_setting_ip_config_get_method(NM_SETTING_IP4_CONFIG), METHOD_SHARED)
+		{
+			logger << "ip4 shared fail" << std::endl;
+			continue;
+		}
+		
+		return currentConnection;
+	}
+	
+	return NULL;
+}
+
+bool WirelessConnectionManager::findConnectionProto(NMSettingWirelessSecurity* wirelessSecurity, const char* value)
+{
+	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_proto, nm_setting_wireless_security_get_proto);
+}
+
+bool WirelessConnectionManager::findConnectionPairwiseEncryption(NMSettingWirelessSecurity* wirelessSecurity, const char* value)
+{	
+	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_pairwise, nm_setting_wireless_security_get_pairwise);
+}
+
+bool WirelessConnectionManager::findConnectionGroupEncryption(NMSettingWirelessSecurity* wirelessSecurity, const char* value)
+{
+	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_group, nm_setting_wireless_security_get_group);
+}
+
+bool WirelessConnectionManager::findConnectionProperty(NMSettingWirelessSecurity* wirelessSecurity, const char *value, ConnectionPropertyLengthFunc lengthFunc, ConnectionPropertyIndexFunc indexFunc)
+{
+	int length = lengthFunc(wirelessSecurity);
+	for (int i = 0; i < length; i++)
+	{
+		if (!g_strcmp0(indexFunc(wirelessSecurity, i), value))
+			return true;
+	}
+	
+	return false;
 }
 
 bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
@@ -185,7 +304,7 @@ NMConnection* WirelessConnectionManager::newExternalConnection(NMDeviceWifi* dev
 	
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), 
-				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PROP_PSK, 
+				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PSK, 
 				NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), 
 				NULL);
 	
@@ -238,7 +357,8 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&asyncTransferUnit);
 	waitForAsync();
-	initExternalConnection();
+	//initExternalConnection();
+	initHotspot();
 }
 
 void WirelessConnectionManager::setSSID(const std::string& ssid)
