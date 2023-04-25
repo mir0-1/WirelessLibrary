@@ -76,7 +76,7 @@ void WirelessConnectionManager::initConnection()
 			CONTINUE_IF(!isAccessPointWPA(accessPoint), "Access point not WPA");
 		}
 		
-		connection = newConnection(accessPoint, device);
+		connection = newConnection(device);
 		if (connection != NULL)
 		{
 			if (activateAndOrAddConnection(connection, device, accessPoint, true))
