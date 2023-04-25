@@ -305,9 +305,9 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 	logger << "-selfHotspot" << std::endl;
 	if (selfHotspot)
 	{
-		g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_MODE, MODE_AP,
+		/*g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_MODE, MODE_AP,
 												NM_SETTING_WIRELESS_BAND, BAND_BG,
-												NULL);
+												NULL);*/
 		
 		//nm_setting_wireless_security_add_proto(settingWirelessSecurity, PROTO_RSN);
 		//nm_setting_wireless_security_add_pairwise(settingWirelessSecurity, PAIRWISE_CCMP);
