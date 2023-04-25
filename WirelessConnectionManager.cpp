@@ -122,19 +122,11 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 		return true;
 	
 	gulong signalHandlerId = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
-	GSource* gTimeoutSource = g_timeout_source_new_seconds(timeout);
-	g_source_set_callback(gTimeoutSource, connectionActivateTimeoutCallback, (gpointer)&asyncTransferUnit, NULL);
-	g_source_attach(gTimeoutSource, gMainContext);
 	waitForAsync();
-	g_signal_handler_disconnect(activatingConnection, signalHandlerId);
+	g_clear_signal_handler_disconnect(signalHandlerId, activatingConnection);
 	connectionState = nm_active_connection_get_state(activatingConnection);
 	
-	bool successful = (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
-	
-	g_source_destroy(gTimeoutSource);
-	g_source_unref(gTimeoutSource);
-	
-	return successful;
+	return (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
 }
 
 void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE)
@@ -156,13 +148,6 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
 	if (state != NM_ACTIVE_CONNECTION_STATE_ACTIVATING)
 		asyncTransferUnit->thisObj->signalAsyncReady();
-}
-
-gboolean WirelessConnectionManager::connectionActivateTimeoutCallback(gpointer asyncTransferUnitPtr)
-{
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	asyncTransferUnit->thisObj->signalAsyncReady();
-	return G_SOURCE_CONTINUE;
 }
 
 bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
