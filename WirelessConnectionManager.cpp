@@ -99,6 +99,7 @@ void WirelessConnectionManager::initExternalConnection()
 		logger << "New connection added" << std::endl;
 		return;
 	}
+	logger << "Could not activate connection" << std::endl;
 }
 
 bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
@@ -153,7 +154,7 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 {
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
-	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+	if (state != NM_ACTIVE_CONNECTION_STATE_ACTIVATING)
 		asyncTransferUnit->thisObj->signalAsyncReady();
 }
 
