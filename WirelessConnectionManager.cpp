@@ -124,7 +124,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	
 	if (add && connectionState != NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 	{
-		nm_remote_connection_delete_async(NM_REMOTE_CONNECTION(connection), NULL, connectionDeleteReadyCallback, (gpointer)&asyncTransferUnit);
+		nm_remote_connection_delete_async(NM_REMOTE_CONNECTION(activatingConnection), NULL, connectionDeleteReadyCallback, (gpointer)&asyncTransferUnit);
 		waitForAsync();
 		return false;
 	}
