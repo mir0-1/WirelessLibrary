@@ -65,27 +65,25 @@ void WirelessConnectionManager::initExternalConnection()
 	NMConnection* connection;
 	
 	if (accessPoint == NULL)
-	{
 		logger << "Access point not present" << std::endl;
-		return;
-	}
-	
-	connection = tryFindExternalConnection(accessPoint);
-	if (connection != NULL)
+	else
 	{
-		logger << "Found connection from AP" << std::endl;
-		if (activateAndOrAddConnection(connection, device, accessPoint, false))
-			logger << "Existing connection activated" << std::endl;
-		else
-			logger << "Failed trying to activate existing connection" << std::endl;
-		return;
-	}
-	logger << "Could not find suitable existing connection" << std::endl;
-	
-	if(!isAccessPointWPA(accessPoint))
-	{
-		logger << "Access point not WPA" << std::endl;
-		return;
+		connection = tryFindExternalConnection(accessPoint);
+		if (connection != NULL)
+		{
+			logger << "Found connection from AP" << std::endl;
+			if (activateAndOrAddConnection(connection, device, accessPoint, false))
+			{
+				logger << "Existing connection activated" << std::endl;
+				return;
+			}
+			else
+				logger << "Failed trying to activate existing connection" << std::endl;
+		}
+		logger << "Could not find suitable existing connection" << std::endl;
+		
+		if(!isAccessPointWPA(accessPoint))
+			logger << "Access point not WPA" << std::endl;
 	}
 	
 	connection = newExternalConnection(device);
