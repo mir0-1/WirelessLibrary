@@ -119,7 +119,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 		logger << "loop iteration: " << i << std::endl;
 		NMConnection* currentConnection = NM_CONNECTION(connections->pdata[i]);
 		
-		if (!nm_connection_is_type(currentConnection, NM_SETTING_WIRELESS_NAME))
+		if (!nm_connection_is_type(currentConnection, NM_SETTING_WIRELESS_SETTING_NAME))
 		{
 			logger << "hotspot type" << std::endl;
 			continue;
@@ -181,7 +181,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
-		if (g_strcmp0(nm_setting_ip_config_get_method(NM_SETTING_IP4_CONFIG), METHOD_SHARED)
+		if (g_strcmp0(nm_setting_ip_config_get_method(NM_SETTING_IP_CONFIG(settingIP)), METHOD_SHARED)
 		{
 			logger << "ip4 shared fail" << std::endl;
 			continue;
@@ -195,7 +195,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 
 bool WirelessConnectionManager::findConnectionProto(NMSettingWirelessSecurity* wirelessSecurity, const char* value)
 {
-	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_proto, nm_setting_wireless_security_get_proto);
+	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_protos, nm_setting_wireless_security_get_proto);
 }
 
 bool WirelessConnectionManager::findConnectionPairwiseEncryption(NMSettingWirelessSecurity* wirelessSecurity, const char* value)
@@ -205,7 +205,7 @@ bool WirelessConnectionManager::findConnectionPairwiseEncryption(NMSettingWirele
 
 bool WirelessConnectionManager::findConnectionGroupEncryption(NMSettingWirelessSecurity* wirelessSecurity, const char* value)
 {
-	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_group, nm_setting_wireless_security_get_group);
+	return findConnectionProperty(wirelessSecurity, value, nm_setting_wireless_security_get_num_groups, nm_setting_wireless_security_get_group);
 }
 
 bool WirelessConnectionManager::findConnectionProperty(NMSettingWirelessSecurity* wirelessSecurity, const char *value, ConnectionPropertyLengthFunc lengthFunc, ConnectionPropertyIndexFunc indexFunc)
