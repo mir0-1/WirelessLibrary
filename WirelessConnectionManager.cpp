@@ -56,13 +56,14 @@ void WirelessConnectionManager::initConnection()
 	NMDeviceWifi* device = initWifiDevice();
 	RETURN_IF(device, "Device was NULL");
 	NMAccessPoint* accessPoint = findAccessPointBySSID(device);
+	NMConnection* connection;
 	for(;;tryHotspot = true)
 	{
 		if (tryHotspot != true)
 		{
 			CONTINUE_IF(accessPoint == NULL, "Access point not present");
 			
-			NMConnection* connection = tryFindConnectionFromAP(accessPoint);
+			connection = tryFindConnectionFromAP(accessPoint);
 			if (connection != NULL)
 			{
 				if (activateAndOrAddConnection(connection, device, accessPoint, false))
