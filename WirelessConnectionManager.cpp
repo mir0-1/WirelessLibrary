@@ -90,7 +90,7 @@ void WirelessConnectionManager::initExternalConnection()
 		logger << "Failed added connection activation" << std::endl;
 		return;
 	}
-	if (accessPoint == NULL || activateAndOrAddConnection(connection, device, accessPoint, true))
+	if (accessPoint != NULL || activateAndOrAddConnection(connection, device, accessPoint, true))
 	{
 		logger << "New connection added and activated" << std::endl;
 		return;
