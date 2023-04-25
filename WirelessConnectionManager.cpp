@@ -149,7 +149,10 @@ void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnecti
 	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
 	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+	{
+		logger << "activated!!!" << std::endl;
 		asyncTransferUnit->thisObj->signalAsyncReady();
+	}
 }
 
 gboolean WirelessConnectionManager::connectionActivateTimeoutCallback(gpointer asyncTransferUnitPtr)
