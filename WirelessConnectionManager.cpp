@@ -236,6 +236,22 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	
 	if (add && connectionState != NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 	{
+		switch (connectionState)
+		{
+			case NM_ACTIVE_CONNECTION_STATE_ACTIVATING:
+				logger << "is activating?" << std::endl;
+				break;
+			case NM_ACTIVE_CONNECTION_STATE_UNKNOWN:
+				logger << "is unknown?" << std::endl;
+				break;
+			case NM_ACTIVE_CONNECTION_STATE_DEACTIVATING:
+				logger << "is deactivating?" << std::endl;
+				break;
+			case NM_ACTIVE_CONNECTION_STATE_DEACTIVATED:
+				logger << "is deactivated?" << std::endl;
+				break;
+		}
+		logger << "we fail here?" << std::endl;
 		nm_remote_connection_delete_async(nm_active_connection_get_connection(activatingConnection), NULL, connectionDeleteReadyCallback, (gpointer)&asyncTransferUnit);
 		waitForAsync();
 		return false;
@@ -287,25 +303,21 @@ bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
 
 NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, bool selfHotspot)
 {	
-	logger << "-connection" << std::endl;
 	NMConnection* connection = NM_CONNECTION(nm_simple_connection_new());
 	
-	logger << "-settingWireless" << std::endl;
 	NMSettingWireless* settingWireless = NM_SETTING_WIRELESS(nm_setting_wireless_new());
 	NMSettingWirelessSecurity* settingWirelessSecurity = NM_SETTING_WIRELESS_SECURITY(nm_setting_wireless_security_new());
 	NMSettingIPConfig* settingIP = NULL;
 	
-	logger << "-settingWirelessSecurity" << std::endl;
 	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_SSID, ssidGBytes, NULL);
 	g_object_set(G_OBJECT(settingWirelessSecurity), 
 				NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, PSK, 
 				NM_SETTING_WIRELESS_SECURITY_PSK, password.c_str(), 
 				NULL);
 	
-	logger << "-selfHotspot" << std::endl;
 	if (selfHotspot)
 	{
-	g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_MODE, MODE_AP,
+		g_object_set(G_OBJECT(settingWireless), NM_SETTING_WIRELESS_MODE, MODE_AP,
 												NM_SETTING_WIRELESS_BAND, BAND_BG,
 												NULL);
 		
@@ -316,15 +328,12 @@ NMConnection* WirelessConnectionManager::newConnection(NMDeviceWifi* device, boo
 		settingIP = NM_SETTING_IP_CONFIG(nm_setting_ip4_config_new());
 		
 		g_object_set(G_OBJECT(settingIP), NM_SETTING_IP_CONFIG_METHOD, METHOD_SHARED, NULL);
+		nm_connection_add_setting(connection, NM_SETTING(settingIP));
 	}
-	logger << "-after selfHotspot" << std::endl;
 	
 	nm_connection_add_setting(connection, NM_SETTING(settingWireless));
 	nm_connection_add_setting(connection, NM_SETTING(settingWirelessSecurity));
-	if (selfHotspot)
-		nm_connection_add_setting(connection, NM_SETTING(settingIP));
 	
-	logger << "before return" << std::endl;
 	return connection;
 }
 
