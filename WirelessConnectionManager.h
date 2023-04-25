@@ -52,9 +52,9 @@ class WirelessConnectionManager
 		bool findConnectionProperty(NMSettingWirelessSecurity* wirelessSecurity, const char *value, ConnectionPropertyLengthFunc lengthFunc, ConnectionPropertyIndexFunc indexFunc);
 		NMConnection* tryFindExternalConnection(NMAccessPoint* accessPoint);
 		NMConnection* tryFindHotspotConnection();
-		NMConnection* newExternalConnection(NMDeviceWifi* device);
+		NMConnection* newConnection(NMDeviceWifi* device, bool selfHotspot);
 		bool initExternalConnection(NMDeviceWifi* device);
-		bool initHotspot(NMDeviceWifi* device);
+		bool initSelfHotspot(NMDeviceWifi* device);
 		NMAccessPoint* findAccessPoint();
 		void setSSID(const std::string& ssid);
 		void setPassword(const std::string& password);

@@ -2,6 +2,6 @@
 
 int main()
 {
-	WirelessConnectionManager wirelessConnectionManager("Vakrilov04", "04051990");
+	WirelessConnectionManager wirelessConnectionManager("Manolov", "04051990");
 	return 0;
 }
