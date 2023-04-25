@@ -370,7 +370,7 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	waitForAsync();
 	NMDeviceWifi* device = initWifiDevice();
 	//initExternalConnection(device);
-	initHotspot();
+	initHotspot(device);
 }
 
 void WirelessConnectionManager::setSSID(const std::string& ssid)
