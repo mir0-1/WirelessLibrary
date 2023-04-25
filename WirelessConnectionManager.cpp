@@ -121,9 +121,9 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	if (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 		return true;
 	
-	gulong* signalHandlerId = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
+	gulong signalHandlerId = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
 	waitForAsync();
-	g_clear_signal_handler(signalHandlerId, activatingConnection);
+	g_clear_signal_handler(&signalHandlerId, activatingConnection);
 	connectionState = nm_active_connection_get_state(activatingConnection);
 	
 	return (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED);
