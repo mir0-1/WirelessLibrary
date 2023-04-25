@@ -135,7 +135,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 		
 		if (g_strcmp0(nm_setting_wireless_get_mode(settingWireless), MODE_AP))
 		{
-			logger << "ap mode fail" << std::endl;
+			logger << "ap mode fail:" << nm_setting_wireless_get_mode(settingWireless) << std::endl;
 			continue;
 		}
 		
