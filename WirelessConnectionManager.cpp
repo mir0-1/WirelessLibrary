@@ -174,7 +174,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
-		NMSettingIP4Config* settingIP = NM_SETTING_IP4_CONFIG(nm_connection_get_setting_ip4_config(currentConnection));
+		NMSettingIP4Config* settingIP = nm_connection_get_setting_ip4_config(currentConnection);
 		
 		if (settingIP == NULL)
 		{
@@ -182,7 +182,7 @@ NMConnection* WirelessConnectionManager::tryFindHotspotConnection()
 			continue;
 		}
 		
-		if (g_strcmp0(nm_setting_ip_config_get_method(NM_SETTING_IP_CONFIG(settingIP)), METHOD_SHARED)
+		if (g_strcmp0(nm_setting_ip_config_get_method(settingIP, METHOD_SHARED))
 		{
 			logger << "ip4 shared fail" << std::endl;
 			continue;
