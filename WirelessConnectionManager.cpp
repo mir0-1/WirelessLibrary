@@ -66,6 +66,8 @@ void WirelessConnectionManager::initExternalConnection()
 	
 	if (accessPoint == NULL)
 		logger << "Access point not present" << std::endl;
+	else if (!isAccessPointWPA(accessPoint))
+		logger << "Access point not WPA" << std::endl;
 	else
 	{
 		connection = tryFindExternalConnection(accessPoint);
@@ -81,9 +83,6 @@ void WirelessConnectionManager::initExternalConnection()
 				logger << "Failed trying to activate existing connection" << std::endl;
 		}
 		logger << "Could not find suitable existing connection" << std::endl;
-		
-		if(!isAccessPointWPA(accessPoint))
-			logger << "Access point not WPA" << std::endl;
 	}
 	
 	connection = newExternalConnection(device);
