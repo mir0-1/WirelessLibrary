@@ -5,11 +5,11 @@ COMPILER=g++
 CONFIG=`pkg-config --cflags --libs glib-2.0 libnm`
 BUILD=$(COMPILER) $^ $(CONFIG) -o $(OUTPUT_NAME)
 
-local: WirelessConnectionManager.cpp wifiobj.cpp
+local: WirelessConnectionManager.cpp ../EventManger/EventManager.cpp wifiobj.cpp
 	make clean
 	$(BUILD)
 	
-remote: WirelessConnectionManager.cpp wifiobj.cpp
+remote: WirelessConnectionManager.cpp ../EventManger/EventManager.cpp wifiobj.cpp
 	make clean
 	git pull
 	$(BUILD)
