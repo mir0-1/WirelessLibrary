@@ -382,7 +382,9 @@ void WirelessConnectionManager::setPassword(const std::string& password)
 
 void WirelessConnectionManager::clientReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
+	std::cout << "in clientReadyCallback" << std::endl;
 	EventManager* eventMgr = (EventManager*) eventMgrPtr;
+	std::cout << "eventMgr is " << eventMgr << std::endl;
 	eventMgr->setEventData((void*)nm_client_new_finish(result, NULL));
 	eventMgr->signalAsyncReady();
 }
