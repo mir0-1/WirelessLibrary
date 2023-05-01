@@ -10,7 +10,7 @@ local: WirelessConnectionManager.cpp ../EventManger/EventManager.cpp wifiobj.cpp
 	$(BUILD)
 	
 remote: WirelessConnectionManager.cpp wifiobj.cpp
-	make -C ../EventManger
+	make -C ../EventManager
 	make clean
 	git pull
 	$(BUILD)
