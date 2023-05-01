@@ -352,19 +352,12 @@ NMConnection* WirelessConnectionManager::tryFindExternalConnection(NMAccessPoint
 WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, const std::string& password)
 : logger(std::cout)
 {
-	std::cout << "set ssid" << std::endl;
 	setSSID(ssid);
-	std::cout << "set password" << std::endl;
 	setPassword(password);
-	std::cout << "set client, eventMgr is " << &eventMgr << std::endl;
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&eventMgr);
-	std::cout << "waiting..." << std::endl;
 	eventMgr.waitForAsync();
-	std::cout << "after wait" << std::endl;
 	client = NM_CLIENT(eventMgr.getEventData());
-	std::cout << "after client creation" << std::endl;
 	NMDeviceWifi* device = initWifiDevice();
-	std::cout << "after init device" << std::endl;
 	if (!initExternalConnection(device))
 		initSelfHotspot(device);
 }
@@ -382,9 +375,7 @@ void WirelessConnectionManager::setPassword(const std::string& password)
 
 void WirelessConnectionManager::clientReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	std::cout << "in clientReadyCallback" << std::endl;
 	EventManager* eventMgr = (EventManager*) eventMgrPtr;
-	std::cout << "eventMgr is " << eventMgr << std::endl;
 	eventMgr->setEventData((void*)nm_client_new_finish(result, NULL));
 	eventMgr->signalAsyncReady();
 }
