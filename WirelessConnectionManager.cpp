@@ -36,7 +36,7 @@ void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_T
 {
 	EventManager* eventMgr = (EventManager*) eventMgrPtr;
 	NMConnectivityState connectivityState = nm_client_check_connectivity_finish(NM_CLIENT(srcObject), result, NULL);
-	eventMgr->setLastEventData((void*)(connectivityState == NM_CONNECTIVITY_FULL));
+	eventMgr->setEventData((void*)(connectivityState == NM_CONNECTIVITY_FULL));
 	eventMgr->signalAsyncReady();
 }
 
@@ -354,8 +354,6 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 {
 	setSSID(ssid);
 	setPassword(password);
-	g_mutex_init(&gMutex);
-	g_cond_init(&gCond);
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&eventMgr);
 	eventMgr.waitForAsync();
 	client = NM_CLIENT(eventMgr.getEventData());
