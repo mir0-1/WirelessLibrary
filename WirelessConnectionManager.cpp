@@ -352,9 +352,13 @@ NMConnection* WirelessConnectionManager::tryFindExternalConnection(NMAccessPoint
 WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, const std::string& password)
 : logger(std::cout)
 {
+	std::cout << "set ssid" << std::endl;
 	setSSID(ssid);
+	std::cout << "set password" << std::endl;
 	setPassword(password);
+	std::cout << "set client, eventMgr is " << &eventMgr << std::endl;
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&eventMgr);
+	std::cout << "waiting..." << std::endl;
 	eventMgr.waitForAsync();
 	client = NM_CLIENT(eventMgr.getEventData());
 	NMDeviceWifi* device = initWifiDevice();
