@@ -1,17 +1,9 @@
 #pragma once
-#include <glib.h>
+#include "../EventManager/EventManager.h"
 #include <NetworkManager.h>
 #include <string>
 
-#define CALLBACK_PARAMS_TEMPLATE GObject* srcObject, GAsyncResult* result, gpointer asyncTransferUnitPtr
-
-class WirelessConnectionManager;
-
-typedef struct
-{
-	WirelessConnectionManager* thisObj;
-	void *extraData;
-} AsyncTransferUnit;
+#define CALLBACK_PARAMS_TEMPLATE GObject* srcObject, GAsyncResult* result, gpointer eventMgrPtr
 
 typedef guint32 (*ConnectionPropertyLengthFunc)(NMSettingWirelessSecurity*);
 typedef const char* (*ConnectionPropertyIndexFunc)(NMSettingWirelessSecurity*, guint32);
@@ -22,25 +14,16 @@ class WirelessConnectionManager
 		std::string ssid;
 		std::string password;
 		std::ostream& logger;
-		GBytes* ssidGBytes = NULL;
-		NMClient* client = NULL;
-		GMainContext* gMainContext = NULL;
-		GMainLoop* gMainLoop = NULL;
-		GThread* gLoopThread = NULL;
-		GMutex gMutex;
-		GCond gCond;
-		AsyncTransferUnit asyncTransferUnit;
-		bool lastAsyncState;
+		GBytes* ssidGBytes;
+		NMClient* client;
+		EventManager eventMgr;
 		
-		static gpointer gLoopThreadFunc(gpointer thisObjData);
 		static void clientReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE);
 		static void connectionDeleteReadyCallback(CALLBACK_PARAMS_TEMPLATE);
-		static void connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer asyncTransferUnitPtr);
+		static void connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer eventMgrPtr);
 		
-		void waitForAsync();
-		void signalAsyncReady();
 		NMDeviceWifi* initWifiDevice();
 		bool hasInternetAccess();
 		NMAccessPoint* findAccessPointBySSID(NMDeviceWifi* device);

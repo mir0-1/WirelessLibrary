@@ -12,14 +12,6 @@
 #define GROUP_CCMP "ccmp"
 #define METHOD_SHARED "shared"
 
-gpointer WirelessConnectionManager::gLoopThreadFunc(gpointer thisObjData)
-{
-	WirelessConnectionManager* thisObj = (WirelessConnectionManager*)thisObjData;
-	thisObj->gMainLoop = g_main_loop_new(thisObj->gMainContext, false);
-	g_main_loop_run(thisObj->gMainLoop);
-	return NULL;
-}
-
 NMDeviceWifi* WirelessConnectionManager::initWifiDevice()
 {
 	const GPtrArray* devices = nm_client_get_devices(client);
@@ -35,17 +27,17 @@ NMDeviceWifi* WirelessConnectionManager::initWifiDevice()
 
 bool WirelessConnectionManager::hasInternetAccess()
 {
-	nm_client_check_connectivity_async(client, NULL, connectivityCheckReadyCallback, (gpointer)&asyncTransferUnit);
-	waitForAsync();
-	return asyncTransferUnit.extraData;
+	nm_client_check_connectivity_async(client, NULL, connectivityCheckReadyCallback, (gpointer)&eventMgr);
+	eventMgr.waitForAsync();
+	return (bool)eventMgr.getEventData();
 }
 
 void WirelessConnectionManager::connectivityCheckReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
+	EventManager* eventMgr = (EventManager*) eventMgrPtr;
 	NMConnectivityState connectivityState = nm_client_check_connectivity_finish(NM_CLIENT(srcObject), result, NULL);
-	asyncTransferUnit->extraData = (void*)(connectivityState == NM_CONNECTIVITY_FULL);
-	asyncTransferUnit->thisObj->signalAsyncReady();
+	eventMgr->setLastEventData((void*)(connectivityState == NM_CONNECTIVITY_FULL));
+	eventMgr->signalAsyncReady();
 }
 
 bool WirelessConnectionManager::initExternalConnection(NMDeviceWifi* device)
@@ -213,50 +205,36 @@ bool WirelessConnectionManager::findConnectionProperty(NMSettingWirelessSecurity
 bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connection, NMDeviceWifi* device, NMAccessPoint* accessPoint, bool add)
 {
 	const char* apPath = (accessPoint == NULL) ? NULL : nm_object_get_path(NM_OBJECT(accessPoint));
-	asyncTransferUnit.extraData = (void*)add;
+	eventMgr.setEventData((void*)add);
 	
 	if (!add)
-		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
+		nm_client_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&eventMgr);
 	else
-		nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&asyncTransferUnit);
+		nm_client_add_and_activate_connection_async(client, connection, NM_DEVICE(device), apPath, NULL, connectionActivateStartedCallback, (gpointer)&eventMgr);
 	
-	waitForAsync();
-	if (asyncTransferUnit.extraData == NULL)
+	eventMgr.waitForAsync();
+	void *connActivateResult = eventMgr.getEventData();
+	if (connActivateResult == NULL)
 	{
-		logger << "we fail at extraData" << std::endl;
+		logger << "Connection activation yielded NULL result" << std::endl;
 		return false;
 	}
-	NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(asyncTransferUnit.extraData);
+	NMActiveConnection* activatingConnection = NM_ACTIVE_CONNECTION(connActivateResult);
 	
 	NMActiveConnectionState connectionState = nm_active_connection_get_state(activatingConnection);
 	if (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 		return true;
 	
-	gulong signalHandlerId = g_signal_connect(activatingConnection, "notify::" NM_ACTIVE_CONNECTION_STATE, G_CALLBACK(connectionActivateReadyCallback), (gpointer)&asyncTransferUnit);
-	waitForAsync();
-	g_clear_signal_handler(&signalHandlerId, activatingConnection);
+	guint id = eventMgr.registerConnection(activatingConnection, G_CALLBACK(connectionActivateReadyCallback));
+	eventMgr.waitForAsync();
+	eventMgr.unregisterConnection(activatingConnection, &id);
 	connectionState = nm_active_connection_get_state(activatingConnection);
 	
 	if (add && connectionState != NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 	{
-		switch (connectionState)
-		{
-			case NM_ACTIVE_CONNECTION_STATE_ACTIVATING:
-				logger << "is activating?" << std::endl;
-				break;
-			case NM_ACTIVE_CONNECTION_STATE_UNKNOWN:
-				logger << "is unknown?" << std::endl;
-				break;
-			case NM_ACTIVE_CONNECTION_STATE_DEACTIVATING:
-				logger << "is deactivating?" << std::endl;
-				break;
-			case NM_ACTIVE_CONNECTION_STATE_DEACTIVATED:
-				logger << "is deactivated?" << std::endl;
-				break;
-		}
-		logger << "we fail here?" << std::endl;
-		nm_remote_connection_delete_async(nm_active_connection_get_connection(activatingConnection), NULL, connectionDeleteReadyCallback, (gpointer)&asyncTransferUnit);
-		waitForAsync();
+		logger << "Connection state expected to be activated; in reality it is not" << std::endl;
+		nm_remote_connection_delete_async(nm_active_connection_get_connection(activatingConnection), NULL, connectionDeleteReadyCallback, (gpointer)&eventMgr);
+		eventMgr.waitForAsync();
 		return false;
 	}
 	
@@ -265,30 +243,30 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 
 void WirelessConnectionManager::connectionDeleteReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
+	EventManager* eventMgr = (EventManager*) eventMgrPtr;
 	nm_remote_connection_delete_finish(NM_REMOTE_CONNECTION(srcObject), result, NULL);
-	asyncTransferUnit->thisObj->signalAsyncReady();
+	eventMgr->signalAsyncReady();
 }
 
 void WirelessConnectionManager::connectionActivateStartedCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	bool add = (bool)asyncTransferUnit->extraData;
+	EventManager* eventMgr = (EventManager*) eventMgrPtr;
+	bool add = (bool)eventMgr->getEventData();
 	NMActiveConnection* connResult;
 	if (!add)
 		connResult = nm_client_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
 	else
 		connResult = nm_client_add_and_activate_connection_finish(NM_CLIENT(srcObject), result, NULL);
-	asyncTransferUnit->extraData = (void*)connResult;
-	asyncTransferUnit->thisObj->signalAsyncReady();
+	eventMgr->setEventData((void*)connResult);
+	eventMgr->signalAsyncReady();
 }
 
-void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer asyncTransferUnitPtr)
+void WirelessConnectionManager::connectionActivateReadyCallback(NMActiveConnection* connection, GParamSpec* paramSpec, gpointer eventMgrPtr)
 {
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
+	EventManager* eventMgr = (EventManager*) eventMgrPtr;
 	NMActiveConnectionState state = nm_active_connection_get_state(connection);
 	if (state != NM_ACTIVE_CONNECTION_STATE_ACTIVATING)
-		asyncTransferUnit->thisObj->signalAsyncReady();
+		eventMgr->signalAsyncReady();
 }
 
 bool WirelessConnectionManager::isAccessPointWPA(NMAccessPoint* accessPoint)
@@ -374,18 +352,18 @@ NMConnection* WirelessConnectionManager::tryFindExternalConnection(NMAccessPoint
 WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, const std::string& password)
 : logger(std::cout)
 {
-	asyncTransferUnit.thisObj = this;
 	setSSID(ssid);
 	setPassword(password);
 	g_mutex_init(&gMutex);
 	g_cond_init(&gCond);
 	gMainContext = g_main_context_get_thread_default();
 	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
-	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&asyncTransferUnit);
-	waitForAsync();
+	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&eventMgr);
+	eventMgr.waitForAsync();
+	client = NM_CLIENT(eventMgr.getEventData());
 	NMDeviceWifi* device = initWifiDevice();
-	//initExternalConnection(device);
-	initSelfHotspot(device);
+	if (!initExternalConnection(device))
+		initSelfHotspot(device);
 }
 
 void WirelessConnectionManager::setSSID(const std::string& ssid)
@@ -401,34 +379,12 @@ void WirelessConnectionManager::setPassword(const std::string& password)
 
 void WirelessConnectionManager::clientReadyCallback(CALLBACK_PARAMS_TEMPLATE)
 {
-	AsyncTransferUnit* asyncTransferUnit = (AsyncTransferUnit*) asyncTransferUnitPtr;
-	asyncTransferUnit->thisObj->client = nm_client_new_finish(result, NULL);
-	asyncTransferUnit->thisObj->signalAsyncReady();
-}
-
-void WirelessConnectionManager::waitForAsync()
-{
-	g_mutex_lock(&gMutex);
-	lastAsyncState = false;
-	while (!lastAsyncState)
-		g_cond_wait(&gCond, &gMutex);
-	g_mutex_unlock(&gMutex);
-}
-
-void WirelessConnectionManager::signalAsyncReady()
-{
-	g_mutex_lock(&gMutex);
-	lastAsyncState = true;
-	g_cond_signal(&gCond);
-	g_mutex_unlock(&gMutex);
+	EventManager* eventMgr = (EventManager*) eventMgrPtr;
+	eventMgr->setEventData((void*)nm_client_new_finish(result, NULL));
+	eventMgr->signalAsyncReady();
 }
 
 WirelessConnectionManager::~WirelessConnectionManager()
 {
-	g_main_loop_quit(gMainLoop);
-	g_thread_join(gLoopThread);
-	g_main_loop_unref(gMainLoop);
-	g_mutex_clear(&gMutex);
-	g_cond_clear(&gCond);
 	g_bytes_unref(ssidGBytes);
 }
