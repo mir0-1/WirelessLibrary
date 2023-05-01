@@ -356,8 +356,6 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	setPassword(password);
 	g_mutex_init(&gMutex);
 	g_cond_init(&gCond);
-	gMainContext = g_main_context_get_thread_default();
-	gLoopThread = g_thread_new(NULL, gLoopThreadFunc, (gpointer)this);
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&eventMgr);
 	eventMgr.waitForAsync();
 	client = NM_CLIENT(eventMgr.getEventData());
