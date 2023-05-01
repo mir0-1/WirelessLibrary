@@ -360,8 +360,11 @@ WirelessConnectionManager::WirelessConnectionManager(const std::string& ssid, co
 	nm_client_new_async(NULL, clientReadyCallback, (gpointer)&eventMgr);
 	std::cout << "waiting..." << std::endl;
 	eventMgr.waitForAsync();
+	std::cout << "after wait" << std::endl;
 	client = NM_CLIENT(eventMgr.getEventData());
+	std::cout << "after client creation" << std::endl;
 	NMDeviceWifi* device = initWifiDevice();
+	std::cout << "after init device" << std::endl;
 	if (!initExternalConnection(device))
 		initSelfHotspot(device);
 }
