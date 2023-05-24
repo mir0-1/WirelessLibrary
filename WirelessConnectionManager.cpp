@@ -225,7 +225,7 @@ bool WirelessConnectionManager::activateAndOrAddConnection(NMConnection* connect
 	if (connectionState == NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
 		return true;
 	
-	guint id = eventMgr.registerConnection(activatingConnection, G_CALLBACK(connectionActivateReadyCallback));
+	gulong id = eventMgr.registerConnection(activatingConnection, G_CALLBACK(connectionActivateReadyCallback));
 	eventMgr.waitForAsync();
 	eventMgr.unregisterConnection(activatingConnection, &id);
 	connectionState = nm_active_connection_get_state(activatingConnection);
